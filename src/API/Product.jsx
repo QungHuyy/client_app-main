@@ -40,6 +40,11 @@ const Product = {
     Get_Best_Selling: (limit = 8) => {
         const url = `/api/Product/bestseller?limit=${limit}`
         return axiosClient.get(url)
+    },
+    
+    Get_Product_Stats: (id) => {
+        const url = `/api/Product/stats/${id}`
+        return axiosClient.get(url)
     }
 
 }

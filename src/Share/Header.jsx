@@ -1,9 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link, Redirect } from 'react-router-dom';
+import { Link, Redirect, useHistory } from 'react-router-dom';
 import Cart from '../API/CartAPI';
 import User from '../API/User';
-import logo from '../Image/1.jpg'
 import { addUser, deleteCart } from '../Redux/Action/ActionCart';
 import { changeCount } from '../Redux/Action/ActionCount';
 import { addSession, deleteSession } from '../Redux/Action/ActionSession';
@@ -17,12 +16,13 @@ function Header(props) {
 
     // State count of cart
     const [count_cart, set_count_cart] = useState(0)
-const [matchedProducts, setMatchedProducts] = React.useState([]);
-const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+    const [matchedProducts, setMatchedProducts] = React.useState([]);
+    const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
     const [total_price, set_total_price] = useState(0)
     
     const [carts_mini, set_carts_mini] = useState([])
+    const history = useHistory()
 
     // Hàm này để khởi tạo localStorage dùng để lưu trữ giỏ hàng
     // Và nó sẽ chạy lần đầu
@@ -36,18 +36,23 @@ const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
     }, [])
 
-    // Xử lý thanh navigation
-    const [header_navbar, set_header_navbar] = useState('header-bottom header-sticky')
+    // Xử lý header ghim khi cuộn trang
+    const [isScrolled, setIsScrolled] = useState(false);
 
-    window.addEventListener('scroll', () => {
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 50) {
+                setIsScrolled(true);
+            } else {
+                setIsScrolled(false);
+            }
+        };
 
-        if (window.pageYOffset < 200) {
-            set_header_navbar('header-bottom header-sticky')
-        } else {
-            set_header_navbar('header-bottom header-sticky offset_navigation animate__animated animate__fadeInUp')
-        }
-
-    })
+        window.addEventListener('scroll', handleScroll);
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
 
     const dispatch = useDispatch()
     if (sessionStorage.getItem('id_user')) {
@@ -57,9 +62,6 @@ const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
     //Get IdUser từ redux khi user đã đăng nhập
     var id_user = useSelector(state => state.Session.idUser)
-
-    // Get carts từ redux khi user chưa đăng nhập
-    // const carts = useSelector(state => state.Cart.listCart)
 
     const [active_user, set_active_user] = useState(false)
 
@@ -202,42 +204,40 @@ const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
     }, [])
 
-const handleImageSearch = async (event) => {
-  const file = event.target.files[0];
-  if (!file) {
-    console.log('No file selected');
-    return;
-  }
+    const handleImageSearch = async (event) => {
+      const file = event.target.files[0];
+      if (!file) {
+        console.log('No file selected');
+        return;
+      }
 
-  const formData = new FormData();
-  formData.append('image', file);
+      const formData = new FormData();
+      formData.append('image', file);
 
-  try {
-    const response = await fetch('https://search-by-ai.onrender.com/search-by-image', {
-      method: 'POST',
-      body: formData,
-    });
+      try {
+        const response = await fetch('https://search-by-ai.onrender.com/search-by-image', {
+          method: 'POST',
+          body: formData,
+        });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Response not ok:', errorText);
-      throw new Error('Image search failed');
-    }
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Response not ok:', errorText);
+          throw new Error('Image search failed');
+        }
 
-    const results = await response.json();
-    console.log('Received results:', results);
+        const results = await response.json();
+        console.log('Received results:', results);
 
-    // Lưu data matched_products vào state
-    setMatchedProducts(results.matched_products || []);
-    setIsDialogOpen(true); // Mở dialog hiển thị kết quả
+        // Lưu data matched_products vào state
+        setMatchedProducts(results.matched_products || []);
+        setIsDialogOpen(true); // Mở dialog hiển thị kết quả
 
-  } catch (error) {
-    console.error('Error searching by image:', error);
-    alert('Tìm kiếm theo hình ảnh thất bại, vui lòng thử lại.');
-  }
-};
-
-
+      } catch (error) {
+        console.error('Error searching by image:', error);
+        alert('Tìm kiếm theo hình ảnh thất bại, vui lòng thử lại.');
+      }
+    };
 
 
     const search_header = useMemo(() => {
@@ -248,7 +248,7 @@ const handleImageSearch = async (event) => {
 
         return new_data
 
-    }, [keyword_search])
+    }, [keyword_search, products])
 
     const handler_search = (e) => {
 
@@ -261,208 +261,264 @@ const handleImageSearch = async (event) => {
         // set cho nó cái session
         sessionStorage.setItem('search', keyword_search)
 
-        window.location.replace('/search')
+        history.push('/search')
+    }
 
+    // Hàm xử lý khi click vào kết quả tìm kiếm
+    const handleSearchItemClick = (id) => {
+        history.push(`/detail/${id}`)
+        set_keyword_search('') // Clear search input
     }
 
     return (
-        <header>
-            <div className="header-top">
-                <div className="container">
-                    <div className="row">
-                        <div className="col-lg-3 col-md-4">
-                            <li><span>Telephone Enquiry:</span><a href="#">(+123) 123 321 345</a></li>
-                        </div>
-                        <div className="col-lg-9 col-md-8">
-                            <ul className="d-flex justify-content-end" >
-                                <li>
-                                    <div className="ht-setting-trigger">
-                                        {
-                                            active_user ? (
-                                                <span
-                                                    data-toggle="collapse"
-                                                    data-target="#collapseExample"
-                                                    aria-expanded="false"
-                                                    aria-controls="collapseExample">{user.fullname}</span>) : (
-                                                <span
-                                                    data-toggle="collapse"
-                                                    data-target="#collapseExample"
-                                                    aria-expanded="false"
-                                                    aria-controls="collapseExample">Setting</span>
-                                            )
-                                        }
-                                    </div>
-                                    <div className="ul_setting">
-                                        {active_user ? (
-                                            <ul className="setting_ul collapse" id="collapseExample">
-                                                <li className="li_setting"><Link to={`/profile/${sessionStorage.getItem("id_user")}`}>Profile</Link></li>
-                                                <li className="li_setting"><Link to="/history">Order Status</Link></li>
-                                                <li className="li_setting"><a onClick={handler_logout} href="#">Log Out</a></li>
-                                            </ul>
-                                        ) : (
-                                            <ul className="setting_ul collapse" id="collapseExample">
-                                                <li className="li_setting"><Link to="/signin">Sign In</Link></li>
-                                            </ul>
-                                        )}
-
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className="header-middle pl-sm-0 pr-sm-0 pl-xs-0 pr-xs-0">
-                <div className="container pb_header">
-                    <div className="row">
-                        <div className="col-lg-3">
-                            <div className="logo pb-sm-30 pb-xs-30">
-                                <Link to="/">
-                                    <img src={logo} style={{ width: '13rem' }} />
-                                </Link>
-                            </div>
-                        </div>
-                        <div className="col-lg-9 pl-0 ml-sm-15 ml-xs-15 d-flex justify-content-between">
-                            <form action="/search" className="hm-searchbox" onSubmit={handler_search}>
-                                <input type="text" placeholder="Enter your search key ..." value={keyword_search} onChange={(e) => set_keyword_search(e.target.value)} />
-                                <button className="li-btn" type="submit"><i className="fa fa-search"></i></button>
-                                {
-                                    keyword_search && <div className="show_search_product">
-                                        {
-                                            search_header && search_header.map(value => (
-                                                <div className="hover_box_search d-flex" key={value._id}>
-                                                    <Link to={`/detail/${value._id}`} style={{ padding: '.8rem' }}>
-                                                        <img className="img_list_search" src={value.image} alt="" />
-                                                    </Link>
-
-                                                    <div className="group_title_search" style={{ marginTop: '2.7rem' }}>
-                                                        <h6 className="title_product_search">{value.name_product}</h6>
-                                                        <span className="price_product_search">{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(value.price_product)+ ' VNĐ'}</span>
-                                                    </div>
-                                                </div>
-                                            ))
-                                        }
-                                    </div>
-                                }
-                            </form>
-                             <div>
-            <label htmlFor="imageSearch" style={{ cursor: 'pointer', marginLeft: '10px' }}>
-                <i className="fa fa-camera" aria-hidden="true" title="Search by image"></i>
-            </label>
-            <input
-                type="file"
-                accept="image/*"
-                id="imageSearch"
-                style={{ display: 'none' }}
-                onChange={handleImageSearch}
-            />
-             <ResultDialog
-        open={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
-        products={matchedProducts}
-      />
-        </div>
-            <div className="header-middle-right">
-                                <ul className="hm-menu">
-                                    <li className="hm-wishlist d-flex">
-                                        <li className="hm-minicart">
-                                            <div className="hm-minicart-trigger"
-                                                data-toggle="collapse"
-                                                data-target="#collapse_carts"
-                                                aria-expanded="false"
-                                                aria-controls="collapse_carts">
-                                                <span className="item-icon"></span>
-                                                <span className="item-text">{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(total_price)+ ' VNĐ'}
-                                                    <span className="cart-item-count">{count_cart}</span>
-                                                </span>
-                                            </div>
-                                            <span></span>
-                                            <div className="minicart collapse" id="collapse_carts">
-                                                <ul className="minicart-product-list">
-                                                    {
-                                                        carts_mini && carts_mini.map((value, index) => (
-                                                            <li key={index}>
-                                                                <Link to={`/detail/${value.id_product}`} className="minicart-product-image">
-                                                                    <img src={value.image} alt="cart products" />
-                                                                </Link>
-                                                                <div className="minicart-product-details">
-                                                                    <h6><a>{value.name_product}</a></h6>
-                                                                    <span>{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(value.price_product)+ ' VNĐ'} x {value.count}, {value.size}</span>
-                                                                </div>
-                                                                <a className="close" onClick={() => handler_delete_mini(value.id_cart)}>
-                                                                    <i className="fa fa-close"></i>
-                                                                </a>
-                                                            </li>
-                                                        ))
-                                                    }
-                                                </ul>
-                                                <p className="minicart-total">SUBTOTAL: <span>{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(total_price)+ ' VNĐ'}</span></p>
-                                                <div className="minicart-button">
-                                                    <Link to="/cart" className="li-button li-button-fullwidth li-button-dark">
-                                                        <span>View Full Cart</span>
-                                                    </Link>
-                                                </div>
-                                            </div>
-                                        </li>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div className={header_navbar}>
+        <div className="header-area">
+            {/* Header với màu chủ đạo #fed700 */}
+            <div className="header" style={{
+                backgroundColor: '#fed700', 
+                borderBottom: '1px solid #e5e5e5', 
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                zIndex: 1000,
+                fontFamily: 'Montserrat, sans-serif',
+                transition: 'all 0.3s ease',
+                boxShadow: isScrolled ? '0 2px 10px rgba(0,0,0,0.1)' : 'none'
+            }}>
+                {/* Top header với Telephone Enquiry */}
+                <div className="pre-header py-2" style={{
+                    backgroundColor: '#f5f5f5', 
+                    borderBottom: '1px solid #e0e0e0',
+                    display: isScrolled ? 'none' : 'block'
+                }}>
                     <div className="container">
                         <div className="row">
-                            <div className="col-lg-12">
-                                <div className="hb-menu">
-                                    <nav>
-                                        <ul>
-
-                                            <li className="dropdown-holder"><Link to="/">Home</Link></li>
-                                            <li className="megamenu-holder"><Link to="/shop/all">Menu</Link>
-                                                <ul class="megamenu hb-megamenu">
-                                                    <li><Link to="/shop/unisex">Unisex</Link>
-                                                        <ul>
-                                                            </ul>
-                                                        </li>
-                                                    <li><Link to="/shop/male">Male</Link>
-                                                        <ul>
-                                                            {
-                                                                male && male.map(value => (
-                                                                    <li key={value._id}>
-                                                                        <Link to={`/shop/${value._id}`} style={{ cursor: 'pointer' }}>{value.category}</Link>
-                                                                    </li>
-                                                                ))
-                                                            }
-                                                        </ul>
-                                                    </li>
-                                                    <li><Link to="/shop/female">Female</Link>
-                                                        <ul>
-                                                            {
-                                                                female && female.map(value => (
-                                                                    <li key={value._id}>
-                                                                        <Link to={`/shop/${value._id}`} style={{ cursor: 'pointer' }}>{value.category}</Link>
-                                                                    </li>
-                                                                ))
-                                                            }
-                                                        </ul>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                            <li><Link to="/event">Event</Link></li>
-                                            <li><Link to="/contact">Contact</Link></li>
-                                             <li><Link to="/chatbot">Chatbot</Link></li>
-
-                                        </ul>
-
-                                    </nav>
+                            <div className="col-md-6">
+                                <span style={{fontSize: '14px', color: '#666'}}>
+                                    Telephone Enquiry: (+123) 123 321 345
+                                </span>
+                            </div>
+                            <div className="col-md-6 text-right">
+                                <span style={{fontSize: '14px', color: '#666', marginLeft: '15px'}}>
+                                    <i className="fa fa-truck mr-1"></i> Miễn phí vận chuyển với đơn hàng trên 500K
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {/* Middle header với logo và search */}
+                <div className="container py-3">
+                    <div className="row align-items-center">
+                        {/* Logo H&A SHOP - chỉ để ảnh không có text */}
+                        <div className="col-md-3 text-center">
+                            <Link to="/" className="d-inline-block">
+                                <img src="https://res.cloudinary.com/dwmsfixy5/image/upload/v1749057780/logoapp_uus1zk.png" alt="Logo" style={{maxWidth: isScrolled ? '60px' : '80px', transition: 'all 0.3s ease'}} />
+                            </Link>
+                        </div>
+                        
+                        {/* Search bar */}
+                        <div className="col-md-6 position-relative">
+                            <form className="hm-searchbox" onSubmit={handler_search} style={{position: 'relative'}}>
+                                <input 
+                                    type="text" 
+                                    placeholder="Enter your search key ..." 
+                                    value={keyword_search} 
+                                    onChange={(e) => set_keyword_search(e.target.value)} 
+                                    style={{
+                                        width: '100%',
+                                        height: '40px',
+                                        border: '1px solid #e5e5e5',
+                                        borderRadius: '20px 0 0 20px',
+                                        padding: '0 20px',
+                                        fontFamily: 'Montserrat, sans-serif'
+                                    }}
+                                />
+                                <button 
+                                    type="submit" 
+                                    style={{
+                                        position: 'absolute',
+                                        right: '0',
+                                        top: '0',
+                                        height: '40px',
+                                        width: '50px',
+                                        backgroundColor: '#333',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '0 20px 20px 0'
+                                    }}
+                                >
+                                    <i className="fa fa-search"></i>
+                                </button>
+                            </form>
+                            
+                            {/* Kết quả tìm kiếm realtime */}
+                            {keyword_search && search_header.length > 0 && (
+                                <div className="search-results" style={{
+                                    position: 'absolute',
+                                    top: '45px',
+                                    left: '0',
+                                    width: '100%',
+                                    backgroundColor: 'white',
+                                    boxShadow: '0 3px 10px rgba(0,0,0,0.1)',
+                                    borderRadius: '5px',
+                                    zIndex: 10,
+                                    maxHeight: '350px',
+                                    overflowY: 'auto',
+                                    fontFamily: 'Montserrat, sans-serif'
+                                }}>
+                                    {search_header.slice(0, 5).map(product => (
+                                        <div 
+                                            key={product._id} 
+                                            className="search-item d-flex align-items-center p-2 border-bottom"
+                                            onClick={() => handleSearchItemClick(product._id)}
+                                            style={{cursor: 'pointer'}}
+                                        >
+                                            <div className="search-image mr-3" style={{width: '50px', height: '50px'}}>
+                                                <img 
+                                                    src={product.image} 
+                                                    alt={product.name_product} 
+                                                    style={{width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px'}} 
+                                                />
+                                            </div>
+                                            <div className="search-info">
+                                                <div className="search-name" style={{fontWeight: 'bold', fontSize: '14px'}}>{product.name_product}</div>
+                                                <div className="search-price" style={{color: '#e80f0f', fontSize: '13px'}}>
+                                                    {new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(product.price_product)+ ' VNĐ'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            
+                            {/* Image search button */}
+                            <label htmlFor="image-upload" style={{
+                                position: 'absolute',
+                                right: '55px',
+                                top: '8px',
+                                cursor: 'pointer',
+                                color: '#666'
+                            }}>
+                                <i className="fa fa-camera"></i>
+                                <input 
+                                    id="image-upload" 
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageSearch}
+                                    style={{display: 'none'}}
+                                />
+                            </label>
+                        </div>
+                        
+                        {/* Icons: Wishlist, Cart, User */}
+                        <div className="col-md-3 text-right">
+                            <div className="d-flex justify-content-end align-items-center">
+                                {/* Wishlist icon */}
+                                <a href="/wishlist" className="mr-4" style={{color: '#333', fontSize: '22px'}}>
+                                    <i className="fa fa-heart-o"></i>
+                                </a>
+                                
+                                {/* Cart icon - chỉ hiển thị số lượng */}
+                                <a href="/cart" className="position-relative mr-4" style={{color: '#333', fontSize: '22px'}}>
+                                    <i className="fa fa-shopping-cart"></i>
+                                    <span className="badge badge-danger rounded-circle" style={{position: 'absolute', top: '-8px', right: '-8px', fontSize: '10px', padding: '3px 6px'}}>
+                                        {count_cart}
+                                    </span>
+                                </a>
+                                
+                                {/* User icon có dropdown */}
+                                <div className="position-relative">
+                                    <div className="dropdown">
+                                        <span className="dropdown-toggle" 
+                                            style={{color: '#333', fontSize: '22px', cursor: 'pointer'}} 
+                                            id="userDropdown" 
+                                            data-toggle="dropdown" 
+                                            aria-haspopup="true" 
+                                            aria-expanded="false">
+                                            <i className="fa fa-user-o"></i>
+                                        </span>
+                                        <div className="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown" style={{fontFamily: 'Montserrat, sans-serif'}}>
+                                            {active_user ? (
+                                                <>
+                                                    <div className="dropdown-item-text font-weight-bold pb-2 border-bottom">
+                                                        Xin chào, {user.fullname}
+                                                    </div>
+                                                    <Link className="dropdown-item" to={`/profile/${sessionStorage.getItem("id_user")}`}>
+                                                        <i className="fa fa-user-circle mr-2"></i> Tài khoản
+                                                    </Link>
+                                                    <Link className="dropdown-item" to="/history">
+                                                        <i className="fa fa-history mr-2"></i> Đơn hàng
+                                                    </Link>
+                                                    <div className="dropdown-divider"></div>
+                                                    <a className="dropdown-item" href="#" onClick={handler_logout}>
+                                                        <i className="fa fa-sign-out mr-2"></i> Đăng xuất
+                                                    </a>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Link className="dropdown-item" to="/signin">
+                                                        <i className="fa fa-sign-in mr-2"></i> Đăng nhập
+                                                    </Link>
+                                                    <Link className="dropdown-item" to="/register">
+                                                        <i className="fa fa-user-plus mr-2"></i> Đăng ký
+                                                    </Link>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                
+                {/* Navigation menu - Tiếng Việt */}
+                <div className="navigation-menu" style={{backgroundColor: '#fed700', boxShadow: '0 2px 5px rgba(0,0,0,0.1)'}}>
+                    <div className="container">
+                        <ul className="nav justify-content-center" style={{fontFamily: 'Montserrat, sans-serif'}}>
+                            <li className="nav-item">
+                                <Link className="nav-link" to="/" style={{color: '#333', fontWeight: 'bold', padding: '12px 20px'}}>Trang chủ</Link>
+                            </li>
+                            <li className="nav-item dropdown">
+                                <a className="nav-link dropdown-toggle" href="#" id="menuDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style={{color: '#333', fontWeight: 'bold', padding: '12px 20px'}}>
+                                    Danh mục
+                                </a>
+                                <div className="dropdown-menu" aria-labelledby="menuDropdown">
+                                    <Link className="dropdown-item" to="/shop/male">Nam</Link>
+                                    <Link className="dropdown-item" to="/shop/female">Nữ</Link>
+                                    <Link className="dropdown-item" to="/shop/unisex">Unisex</Link>
+                                </div>
+                            </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to="/event" style={{color: '#333', fontWeight: 'bold', padding: '12px 20px'}}>Sự kiện</Link>
+                            </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to="/contact" style={{color: '#333', fontWeight: 'bold', padding: '12px 20px'}}>Liên hệ</Link>
+                            </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to="/chatbot" style={{color: '#333', fontWeight: 'bold', padding: '12px 20px'}}>Chatbot</Link>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-        </header>
+            
+            {/* Thêm div để tạo không gian cho header cố định */}
+            <div style={{
+                height: isScrolled ? '128px' : '176px', 
+                transition: 'height 0.3s ease'
+            }}></div>
+            
+            {/* Dialog hiển thị kết quả tìm kiếm bằng hình ảnh */}
+            {isDialogOpen && (
+                <ResultDialog 
+                    open={isDialogOpen} 
+                    onClose={() => setIsDialogOpen(false)} 
+                    products={matchedProducts} 
+                />
+            )}
+        </div>
     );
 }
 

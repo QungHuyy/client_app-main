@@ -181,197 +181,6 @@ function Home(props) {
 
     return (
         <div className="container-fluid px-0">
-            {/* Header phần đầu */}
-            <div className="header" style={{backgroundColor: '#fed700', borderBottom: '1px solid #e5e5e5', position: 'sticky', top: 0, zIndex: 1000}}>
-                {/* Top header */}
-                <div className="header-top py-2" style={{backgroundColor: '#f5f5f5', borderBottom: '1px solid #e0e0e0'}}>
-                    <div className="container">
-                        <div className="row align-items-center">
-                            <div className="col-md-6">
-                                <span style={{fontSize: '13px', color: '#666'}}>
-                                    <i className="fa fa-phone mr-1"></i> Hotline: 0123 456 789
-                                </span>
-                                <span style={{fontSize: '13px', color: '#666', marginLeft: '15px'}}>
-                                    <i className="fa fa-envelope mr-1"></i> Email: support@fashionshop.com
-                                </span>
-                            </div>
-                            <div className="col-md-6 text-right">
-                                <span style={{fontSize: '13px', color: '#666', marginLeft: '15px'}}>
-                                    <i className="fa fa-truck mr-1"></i> Miễn phí vận chuyển với đơn hàng trên 500K
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                {/* Main header */}
-                <div className="container py-2">
-                    <div className="row align-items-center">
-                        {/* Logo */}
-                        <div className="col-md-2">
-                            <Link to="/" style={{textDecoration: 'none'}}>
-                                <img src="https://res.cloudinary.com/dwmsfixy5/image/upload/v1749057780/logoapp_uus1zk.png" alt="Logo" style={{maxWidth: '75px'}} />
-                            </Link>
-                        </div>
-                        
-                        {/* Search bar */}
-                        <div className="col-md-7 position-relative">
-                            <form className="hm-searchbox" onSubmit={handler_search}>
-                                <input 
-                                    type="text" 
-                                    placeholder="Enter your search key ..." 
-                                    value={keyword_search} 
-                                    onChange={(e) => set_keyword_search(e.target.value)} 
-                                    style={{
-                                        width: '100%',
-                                        height: '40px',
-                                        border: '1px solid #e5e5e5',
-                                        borderRadius: '20px 0 0 20px',
-                                        padding: '0 20px'
-                                    }}
-                                />
-                                <button 
-                                    type="submit" 
-                                    style={{
-                                        position: 'absolute',
-                                        right: '0',
-                                        top: '0',
-                                        height: '40px',
-                                        width: '50px',
-                                        backgroundColor: '#333',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '0 20px 20px 0'
-                                    }}
-                                >
-                                    <i className="fa fa-search"></i>
-                                </button>
-                            </form>
-                            
-                            {/* Kết quả tìm kiếm realtime */}
-                            {keyword_search && search_results.length > 0 && (
-                                <div className="search-results" style={{
-                                    position: 'absolute',
-                                    top: '45px',
-                                    left: '0',
-                                    width: '100%',
-                                    backgroundColor: 'white',
-                                    boxShadow: '0 3px 10px rgba(0,0,0,0.1)',
-                                    borderRadius: '5px',
-                                    zIndex: 10,
-                                    maxHeight: '350px',
-                                    overflowY: 'auto'
-                                }}>
-                                    {search_results.map(product => (
-                                        <div 
-                                            key={product._id} 
-                                            className="search-item d-flex align-items-center p-2 border-bottom"
-                                            onClick={() => handleSearchItemClick(product._id)}
-                                            style={{cursor: 'pointer'}}
-                                        >
-                                            <div className="search-image mr-3" style={{width: '50px', height: '50px'}}>
-                                                <img 
-                                                    src={product.image} 
-                                                    alt={product.name_product} 
-                                                    style={{width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px'}} 
-                                                />
-                                            </div>
-                                            <div className="search-info">
-                                                <div className="search-name" style={{fontWeight: 'bold', fontSize: '14px'}}>{product.name_product}</div>
-                                                <div className="search-price" style={{color: '#e80f0f', fontSize: '13px'}}>
-                                                    {new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(product.price_product)+ ' VNĐ'}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                        
-                        {/* Icons */}
-                        <div className="col-md-3 text-right">
-                            <div className="d-flex justify-content-end align-items-center">
-                                <a href="/wishlist" className="mr-3" style={{color: '#333', fontSize: '22px'}}>
-                                    <i className="fa fa-heart-o"></i>
-                                </a>
-                                <a href="/cart" className="position-relative mr-3" style={{color: '#333', fontSize: '22px'}}>
-                                    <i className="fa fa-shopping-cart"></i>
-                                    <span className="badge badge-danger rounded-circle" style={{position: 'absolute', top: '-8px', right: '-8px', fontSize: '10px', padding: '3px 6px'}}>
-                                        {count_change}
-                                    </span>
-                                </a>
-                                {active_user ? (
-                                    <div className="dropdown">
-                                        <span className="dropdown-toggle" style={{color: '#333', fontSize: '22px', cursor: 'pointer'}} id="userDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i className="fa fa-user-o"></i>
-                                        </span>
-                                        <div className="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
-                                            <div className="dropdown-item-text font-weight-bold pb-2 border-bottom">
-                                                Xin chào, {user.fullname}
-                                            </div>
-                                            <Link className="dropdown-item" to={`/profile/${sessionStorage.getItem("id_user")}`}>
-                                                <i className="fa fa-user-circle mr-2"></i> Profile
-                                            </Link>
-                                            <Link className="dropdown-item" to="/history">
-                                                <i className="fa fa-history mr-2"></i> Order Status
-                                            </Link>
-                                            <div className="dropdown-divider"></div>
-                                            <a className="dropdown-item" href="#" onClick={handler_logout}>
-                                                <i className="fa fa-sign-out mr-2"></i> Log Out
-                                            </a>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="dropdown">
-                                        <span className="dropdown-toggle" style={{color: '#333', fontSize: '22px', cursor: 'pointer'}} id="userDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            <i className="fa fa-user-o"></i>
-                                        </span>
-                                        <div className="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
-                                            <Link className="dropdown-item" to="/signin">
-                                                <i className="fa fa-sign-in mr-2"></i> Đăng nhập
-                                            </Link>
-                                            <Link className="dropdown-item" to="/register">
-                                                <i className="fa fa-user-plus mr-2"></i> Đăng ký
-                                            </Link>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                {/* Navigation menu */}
-                <div className="navigation-menu" style={{backgroundColor: '#fed700', boxShadow: '0 2px 5px rgba(0,0,0,0.1)'}}>
-                    <div className="container">
-                        <ul className="nav justify-content-center">
-                            <li className="nav-item">
-                                <a className="nav-link" href="/" style={{color: '#333', fontWeight: 'bold', padding: '12px 20px'}}>Home</a>
-                            </li>
-                            <li className="nav-item dropdown">
-                                <a className="nav-link dropdown-toggle" href="#" id="menuDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style={{color: '#333', fontWeight: 'bold', padding: '12px 20px'}}>
-                                    Menu
-                                </a>
-                                <div className="dropdown-menu" aria-labelledby="menuDropdown">
-                                    <a className="dropdown-item" href="/shop/male">Nam</a>
-                                    <a className="dropdown-item" href="/shop/female">Nữ</a>
-                                    <a className="dropdown-item" href="/shop/unisex">Unisex</a>
-                                </div>
-                            </li>
-                            <li className="nav-item">
-                                <a className="nav-link" href="/events" style={{color: '#333', fontWeight: 'bold', padding: '12px 20px'}}>Event</a>
-                            </li>
-                            <li className="nav-item">
-                                <a className="nav-link" href="/contact" style={{color: '#333', fontWeight: 'bold', padding: '12px 20px'}}>Contact</a>
-                            </li>
-                            <li className="nav-item">
-                                <a className="nav-link" href="/chatbot" style={{color: '#333', fontWeight: 'bold', padding: '12px 20px'}}>Chatbot</a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
             {/* Banner với slider tự động */}
             <div className="slider-with-banner mb-4">
                 <div className="row m-0">
@@ -450,7 +259,7 @@ function Home(props) {
                 <Home_Category GET_id_modal={GET_id_modal} />
 
                 {/* Phần sản phẩm mới */}
-                <section className="product-area pt-60 pb-45">
+                <section className="product-area pt-60 pb-45" style={{fontFamily: 'Montserrat, sans-serif'}}>
                     <div className="row">
                         <div className="col-lg-12">
                             <div className="li-section-title">
@@ -465,14 +274,16 @@ function Home(props) {
                                     </div>
                                 </div>
                             ) : (
-                                <Home_Product products={newProducts} GET_id_modal={GET_id_modal} slider={true} />
+                                <div className="product-slider-wrapper" style={{margin: '0 -10px'}}>
+                                    <Home_Product products={newProducts} GET_id_modal={GET_id_modal} slider={true} autoScroll={true} />
+                                </div>
                             )}
                         </div>
                     </div>
                 </section>
 
                 {/* Phần sản phẩm bán chạy và giảm giá (tab) */}
-                <section className="product-area pt-60 pb-45">
+                <section className="product-area pt-60 pb-45" style={{fontFamily: 'Montserrat, sans-serif'}}>
                     <div className="row">
                         <div className="col-lg-12">
                             <div className="li-section-title d-flex">
@@ -490,7 +301,8 @@ function Home(props) {
                                                 cursor: 'pointer',
                                                 padding: '5px 15px',
                                                 borderBottom: activeTab === 'bestseller' ? '2px solid #0066c0' : 'none',
-                                                color: activeTab === 'bestseller' ? '#0066c0' : '#555'
+                                                color: activeTab === 'bestseller' ? '#0066c0' : '#555',
+                                                fontFamily: 'Montserrat, sans-serif'
                                             }}>
                                             Bán chạy nhất
                                         </button>
@@ -505,7 +317,8 @@ function Home(props) {
                                                 cursor: 'pointer',
                                                 padding: '5px 15px',
                                                 borderBottom: activeTab === 'sale' ? '2px solid #e80f0f' : 'none',
-                                                color: activeTab === 'sale' ? '#e80f0f' : '#555'
+                                                color: activeTab === 'sale' ? '#e80f0f' : '#555',
+                                                fontFamily: 'Montserrat, sans-serif'
                                             }}>
                                             Giảm giá nhiều nhất
                                         </button>
@@ -522,10 +335,14 @@ function Home(props) {
                             ) : (
                                 <div className="tab-content">
                                     <div className={`tab-pane ${activeTab === 'bestseller' ? 'active' : 'fade'}`}>
-                                        <Home_Product products={bestSellers} GET_id_modal={GET_id_modal} />
+                                        <div className="product-grid-container" style={{margin: '0 -10px'}}>
+                                            <Home_Product products={bestSellers} GET_id_modal={GET_id_modal} />
+                                        </div>
                                     </div>
                                     <div className={`tab-pane ${activeTab === 'sale' ? 'active' : 'fade'}`}>
-                                        <Home_Product products={saleProducts} GET_id_modal={GET_id_modal} />
+                                        <div className="product-grid-container" style={{margin: '0 -10px'}}>
+                                            <Home_Product products={saleProducts} GET_id_modal={GET_id_modal} />
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -534,32 +351,86 @@ function Home(props) {
                 </section>
 
                 {/* Banner quảng cáo giữa trang */}
-                <div className="li-static-banner mt-4 mb-4">
+                <div className="li-static-banner mt-4 mb-4" style={{fontFamily: 'Montserrat, sans-serif'}}>
                     <div className="row">
                         <div className="col-lg-4 col-md-4 text-center">
-                            <div className="single-banner" style={{overflow: 'hidden', borderRadius: '8px'}}>
-                                <a href="/shop">
-                                    <img src="https://res.cloudinary.com/dwmsfixy5/image/upload/v1748128289/promo-1_adq5tf.jpg" alt="Promo Banner" style={{transition: 'transform 0.5s', width: '100%'}} 
-                                    onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                                    onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'} />
+                            <div className="single-banner" style={{
+                                overflow: 'hidden', 
+                                borderRadius: '8px',
+                                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+                                height: '200px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                marginBottom: '15px'
+                            }}>
+                                <a href="/shop" style={{width: '100%', height: '100%'}}>
+                                    <img 
+                                        src="https://media.istockphoto.com/id/1307516287/vector/free-shipping-promotional-web-banner-concept-delivery-truck-in-front-of-stacks-shipping-box.jpg?s=612x612&w=0&k=20&c=Tq1biqL6bz8U988bwsBPYYgA_LL-RIlLJ0U-hQcYvW4=" 
+                                        alt="Free Shipping Promo Banner" 
+                                        style={{
+                                            transition: 'transform 0.5s', 
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover'
+                                        }} 
+                                        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                                        onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'} 
+                                    />
                                 </a>
                             </div>
                         </div>
                         <div className="col-lg-4 col-md-4 text-center pt-xs-30">
-                            <div className="single-banner" style={{overflow: 'hidden', borderRadius: '8px'}}>
-                                <a href="/shop">
-                                    <img src="https://res.cloudinary.com/dwmsfixy5/image/upload/v1748128289/promo-2_bk7tta.jpg" alt="Promo Banner" style={{transition: 'transform 0.5s', width: '100%'}} 
-                                    onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                                    onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'} />
+                            <div className="single-banner" style={{
+                                overflow: 'hidden', 
+                                borderRadius: '8px',
+                                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+                                height: '200px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                marginBottom: '15px'
+                            }}>
+                                <a href="/shop" style={{width: '100%', height: '100%'}}>
+                                    <img 
+                                        src="https://res.cloudinary.com/dwmsfixy5/image/upload/v1748128289/promo-2_bk7tta.jpg" 
+                                        alt="Promo Banner" 
+                                        style={{
+                                            transition: 'transform 0.5s', 
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover'
+                                        }} 
+                                        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                                        onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'} 
+                                    />
                                 </a>
                             </div>
                         </div>
                         <div className="col-lg-4 col-md-4 text-center pt-xs-30">
-                            <div className="single-banner" style={{overflow: 'hidden', borderRadius: '8px'}}>
-                                <a href="/shop">
-                                    <img src="https://res.cloudinary.com/dwmsfixy5/image/upload/v1748128289/promo-3_z2nk8t.jpg" alt="Promo Banner" style={{transition: 'transform 0.5s', width: '100%'}} 
-                                    onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                                    onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'} />
+                            <div className="single-banner" style={{
+                                overflow: 'hidden', 
+                                borderRadius: '8px',
+                                boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+                                height: '200px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                marginBottom: '15px'
+                            }}>
+                                <a href="/shop" style={{width: '100%', height: '100%'}}>
+                                    <img 
+                                        src="https://res.cloudinary.com/dwmsfixy5/image/upload/v1748128289/promo-3_z2nk8t.jpg" 
+                                        alt="Promo Banner" 
+                                        style={{
+                                            transition: 'transform 0.5s', 
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover'
+                                        }} 
+                                        onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                                        onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'} 
+                                    />
                                 </a>
                             </div>
                         </div>
@@ -567,48 +438,141 @@ function Home(props) {
                 </div>
 
                 {/* Các section phân loại theo giới tính */}
-                <section className="product-area pt-60 pb-45">
+                <section className="product-area pt-60 pb-45" style={{fontFamily: 'Montserrat, sans-serif'}}>
                     <div className="row">
                         <div className="col-12">
-                            <div className="li-section-title">
+                            <div className="li-section-title d-flex justify-content-between align-items-center">
                                 <h2>
                                     <span className="helvetica-font">Sản Phẩm Unisex</span>
                                 </h2>
+                                <Link to="/shop/unisex" className="btn-view-all" style={{
+                                    color: '#333',
+                                    fontWeight: '500',
+                                    fontSize: '14px',
+                                    textDecoration: 'none',
+                                    padding: '5px 15px',
+                                    border: '1px solid #ddd',
+                                    borderRadius: '4px',
+                                    transition: 'all 0.3s'
+                                }}
+                                onMouseOver={e => {
+                                    e.currentTarget.style.backgroundColor = '#fed700';
+                                    e.currentTarget.style.borderColor = '#fed700';
+                                }}
+                                onMouseOut={e => {
+                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                    e.currentTarget.style.borderColor = '#ddd';
+                                }}
+                                >
+                                    Xem tất cả <i className="fa fa-angle-right ml-1"></i>
+                                </Link>
                             </div>
-                            <Home_Product gender={`unisex`} GET_id_modal={GET_id_modal} />
+                            {loading ? (
+                                <div className="text-center py-4">
+                                    <div className="spinner-border text-primary" role="status">
+                                        <span className="sr-only">Đang tải...</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="product-slider-wrapper" style={{margin: '0 -10px'}}>
+                                    <Home_Product gender={`unisex`} GET_id_modal={GET_id_modal} slider={true} autoScroll={true} />
+                                </div>
+                            )}
                         </div>
                     </div>
                 </section>
 
-                <section className="product-area pt-60 pb-45">
+                <section className="product-area pt-60 pb-45" style={{fontFamily: 'Montserrat, sans-serif'}}>
                     <div className="row">
                         <div className="col-12">
-                            <div className="li-section-title">
+                            <div className="li-section-title d-flex justify-content-between align-items-center">
                                 <h2>
                                     <span className="helvetica-font">Thời Trang Nam</span>
                                 </h2>
+                                <Link to="/shop/male" className="btn-view-all" style={{
+                                    color: '#333',
+                                    fontWeight: '500',
+                                    fontSize: '14px',
+                                    textDecoration: 'none',
+                                    padding: '5px 15px',
+                                    border: '1px solid #ddd',
+                                    borderRadius: '4px',
+                                    transition: 'all 0.3s'
+                                }}
+                                onMouseOver={e => {
+                                    e.currentTarget.style.backgroundColor = '#fed700';
+                                    e.currentTarget.style.borderColor = '#fed700';
+                                }}
+                                onMouseOut={e => {
+                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                    e.currentTarget.style.borderColor = '#ddd';
+                                }}
+                                >
+                                    Xem tất cả <i className="fa fa-angle-right ml-1"></i>
+                                </Link>
                             </div>
-                            <Home_Product gender={`male`} GET_id_modal={GET_id_modal} />
+                            {loading ? (
+                                <div className="text-center py-4">
+                                    <div className="spinner-border text-primary" role="status">
+                                        <span className="sr-only">Đang tải...</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="product-slider-wrapper" style={{margin: '0 -10px'}}>
+                                    <Home_Product gender={`male`} GET_id_modal={GET_id_modal} slider={true} autoScroll={true} />
+                                </div>
+                            )}
                         </div>
                     </div>
                 </section>
 
-                <section className="product-area pt-60 pb-45">
+                <section className="product-area pt-60 pb-45" style={{fontFamily: 'Montserrat, sans-serif'}}>
                     <div className="row">
                         <div className="col-12">
-                            <div className="li-section-title">
+                            <div className="li-section-title d-flex justify-content-between align-items-center">
                                 <h2>
                                     <span className="helvetica-font">Thời Trang Nữ</span>
                                 </h2>
+                                <Link to="/shop/female" className="btn-view-all" style={{
+                                    color: '#333',
+                                    fontWeight: '500',
+                                    fontSize: '14px',
+                                    textDecoration: 'none',
+                                    padding: '5px 15px',
+                                    border: '1px solid #ddd',
+                                    borderRadius: '4px',
+                                    transition: 'all 0.3s'
+                                }}
+                                onMouseOver={e => {
+                                    e.currentTarget.style.backgroundColor = '#fed700';
+                                    e.currentTarget.style.borderColor = '#fed700';
+                                }}
+                                onMouseOut={e => {
+                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                    e.currentTarget.style.borderColor = '#ddd';
+                                }}
+                                >
+                                    Xem tất cả <i className="fa fa-angle-right ml-1"></i>
+                                </Link>
                             </div>
-                            <Home_Product gender={`female`} GET_id_modal={GET_id_modal} />
+                            {loading ? (
+                                <div className="text-center py-4">
+                                    <div className="spinner-border text-primary" role="status">
+                                        <span className="sr-only">Đang tải...</span>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="product-slider-wrapper" style={{margin: '0 -10px'}}>
+                                    <Home_Product gender={`female`} GET_id_modal={GET_id_modal} slider={true} autoScroll={true} />
+                                </div>
+                            )}
                         </div>
                     </div>
                 </section>
             </div>
 
             {/* Modal chi tiết sản phẩm */}
-            <div className="modal fade modal-wrapper" id={id_modal} >
+            <div className="modal fade modal-wrapper" id={id_modal} style={{fontFamily: 'Montserrat, sans-serif'}}>
                 <div className="modal-dialog modal-dialog-centered" role="document">
                     <div className="modal-content">
                         <div className="modal-body">
@@ -641,11 +605,11 @@ function Home(props) {
                                             <div className="price-box pt-20">
                                             {
                                                 priceSale ? (<del className="new-price new-price-2" style={{ color: '#525252'}}>{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(product_detail.price_product)+ ' VNĐ'}</del>) :
-                                                <span className="new-price new-price-2">{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(product_detail.price_product)+ ' VNĐ'}</span>
+                                                <span className="new-price new-price-2" style={{color: '#e80f0f'}}>{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(product_detail.price_product)+ ' VNĐ'}</span>
                                             }
                                             <br />
                                             {
-                                               priceSale && <span className="new-price new-price-2">{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(priceSale) + ' VNĐ'}</span>
+                                               priceSale && <span className="new-price new-price-2" style={{color: '#e80f0f'}}>{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(priceSale) + ' VNĐ'}</span>
                                             }
                                             </div>
                                             <div className="product-desc">
@@ -657,7 +621,7 @@ function Home(props) {
                                             </div>
                                             <div className="single-add-to-cart">
                                                 <form onSubmit={handler_addcart} className="cart-quantity">
-                                                    <button className="add-to-cart" type="submit">Add to cart</button>
+                                                    <button className="add-to-cart" type="submit">Thêm vào giỏ hàng</button>
                                                 </form>
                                             </div>
                                         </div>
