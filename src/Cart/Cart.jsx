@@ -146,20 +146,121 @@ function Cart(props) {
     const [new_price, set_new_price] = useState(0)
     const [show_success, set_show_success] = useState(false)
     const [errorCode, setErrorCode] = useState(false)
+    const [isApplyingCoupon, setIsApplyingCoupon] = useState(false)
+    const [appliedCoupon, setAppliedCoupon] = useState(null)
+
+    // Kiểm tra xem đã áp dụng mã giảm giá chưa khi tải trang
+    useEffect(() => {
+        const savedCoupon = localStorage.getItem('coupon')
+        if (savedCoupon) {
+            try {
+                const couponData = JSON.parse(savedCoupon)
+                setAppliedCoupon(couponData)
+                set_coupon(couponData.code)
+                const discountAmount = (total_price * couponData.promotion) / 100
+                setDiscount(discountAmount)
+                set_new_price(total_price - discountAmount)
+            } catch (error) {
+                console.error("Error parsing saved coupon:", error)
+                // Xóa coupon không hợp lệ
+                localStorage.removeItem('id_coupon')
+                localStorage.removeItem('coupon')
+            }
+        }
+    }, [total_price])
+
+    // Kiểm tra nếu có mã giảm giá tạm thời từ trang Event
+    useEffect(() => {
+        const tempCoupon = localStorage.getItem('temp_coupon')
+        if (tempCoupon && !appliedCoupon) {
+            set_coupon(tempCoupon)
+            // Xóa mã tạm thời sau khi đã áp dụng
+            localStorage.removeItem('temp_coupon')
+            
+            // Tự động áp dụng mã giảm giá nếu người dùng đã đăng nhập
+            if (sessionStorage.getItem('id_user')) {
+                const applyTempCoupon = async () => {
+                    const params = {
+                        id_user: sessionStorage.getItem('id_user'),
+                        code: tempCoupon
+                    }
+                    const query = '?' + queryString.stringify(params)
+                    
+                    try {
+                        setIsApplyingCoupon(true)
+                        const response = await CouponAPI.checkCoupon(query)
+                        
+                        if (response && response.msg === 'Thành công' && response.coupon) {
+                            localStorage.setItem('id_coupon', response.coupon._id)
+                            localStorage.setItem('coupon', JSON.stringify(response.coupon))
+                            setAppliedCoupon(response.coupon)
+                            
+                            const discountAmount = (total_price * response.coupon.promotion) / 100
+                            setDiscount(discountAmount)
+                            
+                            const newTotal = total_price - discountAmount
+                            set_new_price(newTotal)
+                            set_show_success(true)
+                            setErrorMessage(`Đã áp dụng mã giảm giá: giảm ${response.coupon.promotion}%`)
+                            
+                            setTimeout(() => {
+                                set_show_success(false)
+                            }, 2000)
+                        }
+                    } catch (error) {
+                        console.error("Error applying temp coupon:", error)
+                    } finally {
+                        setIsApplyingCoupon(false)
+                    }
+                }
+                
+                applyTempCoupon()
+            }
+        }
+    }, [appliedCoupon, total_price])
+
+    const removeCoupon = () => {
+        // Xóa mã giảm giá đã áp dụng
+        localStorage.removeItem('id_coupon')
+        localStorage.removeItem('coupon')
+        setAppliedCoupon(null)
+        setDiscount(0)
+        set_new_price(0)
+        set_coupon('')
+
+        // Hiển thị thông báo
+        setErrorCode(false)
+        set_show_success(true)
+        setErrorMessage('Đã xóa mã giảm giá')
+        setTimeout(() => {
+            set_show_success(false)
+        }, 1500)
+    }
 
     const handlerCoupon = async (e) => {
         e.preventDefault()
 
         try {
             if (!sessionStorage.getItem('id_user')){
+                setErrorMessage('Vui lòng đăng nhập để sử dụng mã giảm giá')
                 set_show_error(true)
                 return
             }
 
             if (!coupon || coupon.trim() === '') {
+                setErrorMessage('Vui lòng nhập mã giảm giá')
                 setErrorCode(true)
                 return
             }
+
+            // Nếu đã áp dụng mã giảm giá, không cho phép áp dụng lại
+            if (appliedCoupon && appliedCoupon.code === coupon) {
+                setErrorMessage('Mã giảm giá đã được áp dụng')
+                setErrorCode(true)
+                return
+            }
+
+            setIsApplyingCoupon(true)
 
             const params = {
                 id_user: sessionStorage.getItem('id_user'),
@@ -171,17 +272,27 @@ function Cart(props) {
             const response = await CouponAPI.checkCoupon(query)
 
             if (!response) {
+                setErrorMessage('Đã xảy ra lỗi khi kiểm tra mã giảm giá')
                 setErrorCode(true)
                 return
             }
 
-            if (response.msg === 'Không tìm thấy' ||
-                response.msg === 'Bạn đã sử dụng mã này rồi' ||
-                response.msg === 'Mã giảm giá đã hết lượt sử dụng'){
+            if (response.msg === 'Không tìm thấy') {
+                setErrorMessage('Mã giảm giá không tồn tại')
+                setErrorCode(true)
+            } else if (response.msg === 'Bạn đã sử dụng mã này rồi') {
+                setErrorMessage('Bạn đã sử dụng mã giảm giá này rồi')
+                setErrorCode(true)
+            } else if (response.msg === 'Bạn đã sử dụng mã này trong một đơn hàng đang xử lý') {
+                setErrorMessage('Mã giảm giá đang được sử dụng trong đơn hàng khác')
+                setErrorCode(true)
+            } else if (response.msg === 'Mã giảm giá đã hết lượt sử dụng') {
+                setErrorMessage('Mã giảm giá đã hết lượt sử dụng')
                 setErrorCode(true)
             } else if (response.msg === 'Thành công' && response.coupon) {
                 localStorage.setItem('id_coupon', response.coupon._id)
                 localStorage.setItem('coupon', JSON.stringify(response.coupon))
+                setAppliedCoupon(response.coupon)
 
                 const discountAmount = (total_price * response.coupon.promotion) / 100
                 setDiscount(discountAmount)
@@ -189,13 +300,18 @@ function Cart(props) {
                 const newTotal = total_price - discountAmount
                 set_new_price(newTotal)
                 set_show_success(true)
+                setErrorMessage(`Đã áp dụng mã giảm giá: giảm ${response.coupon.promotion}%`)
             } else {
                 // Trường hợp không xác định
+                setErrorMessage('Không thể áp dụng mã giảm giá')
                 setErrorCode(true)
             }
         } catch (error) {
             console.error("Error checking coupon:", error)
+            setErrorMessage('Đã xảy ra lỗi khi kiểm tra mã giảm giá')
             setErrorCode(true)
+        } finally {
+            setIsApplyingCoupon(false)
         }
 
         setTimeout(() => {
@@ -203,7 +319,7 @@ function Cart(props) {
             set_show_null_cart(false)
             set_show_success(false)
             setErrorCode(false)
-        }, 1500)
+        }, 2000)
     }
 
     return (
@@ -230,7 +346,7 @@ function Cart(props) {
                         <div className="notification-icon">
                             <i className="fa fa-exclamation-circle"></i>
                         </div>
-                        <div className="notification-message">Mã giảm giá không hợp lệ!</div>
+                        <div className="notification-message">{errorMessage}</div>
                         <button className="close-button" onClick={() => setErrorCode(false)}>
                             <i className="fa fa-times"></i>
                         </button>
@@ -244,7 +360,7 @@ function Cart(props) {
                         <div className="notification-icon">
                             <i className="fa fa-check-circle"></i>
                         </div>
-                        <div className="notification-message">Áp dụng mã giảm giá thành công!</div>
+                        <div className="notification-message">{errorMessage || 'Áp dụng mã giảm giá thành công!'}</div>
                         <button className="close-button" onClick={() => set_show_success(false)}>
                             <i className="fa fa-times"></i>
                         </button>
@@ -392,14 +508,36 @@ function Cart(props) {
                                                             onChange={(e) => set_coupon(e.target.value)} 
                                                             value={coupon} 
                                                             placeholder="Nhập mã giảm giá" 
+                                                            disabled={isApplyingCoupon}
                                                         />
-                                                        <button 
-                                                            className="coupon-btn" 
-                                                            onClick={handlerCoupon}
-                                                        >
-                                                            Áp dụng
-                                                        </button>
+                                                        {appliedCoupon ? (
+                                                            <button 
+                                                                className="coupon-btn remove" 
+                                                                onClick={removeCoupon}
+                                                                disabled={isApplyingCoupon}
+                                                            >
+                                                                <i className="fa fa-times"></i> Xóa
+                                                            </button>
+                                                        ) : (
+                                                            <button 
+                                                                className="coupon-btn" 
+                                                                onClick={handlerCoupon}
+                                                                disabled={isApplyingCoupon}
+                                                            >
+                                                                {isApplyingCoupon ? (
+                                                                    <>
+                                                                        <span className="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>
+                                                                        Đang xử lý...
+                                                                    </>
+                                                                ) : 'Áp dụng'}
+                                                            </button>
+                                                        )}
                                                     </div>
+                                                    {appliedCoupon && (
+                                                        <div className="coupon-applied">
+                                                            <span>Mã giảm giá: <strong>{appliedCoupon.code}</strong> - Giảm {appliedCoupon.promotion}%</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                             <div className="col-lg-5 col-md-6">

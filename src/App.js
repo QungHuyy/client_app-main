@@ -75,11 +75,7 @@ const Event = lazy(() => {
   });
 });
 
-const DetailEvent = lazy(() => {
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(import("./Event/DetailEvent")), 2000);
-  });
-});
+// Đã loại bỏ import DetailEvent
 
 const Contact = lazy(() => {
   return new Promise((resolve) => {
@@ -146,7 +142,7 @@ function App() {
             <Route path="/favorite" component={Favorite} />
 
             <Route exact path="/event" component={Event} />
-            <Route path="/event/:id" component={DetailEvent} />
+            {/* Đã loại bỏ trang chi tiết mã giảm giá */}
 
 
             <Route path="/contact" component={Contact} />

@@ -207,6 +207,7 @@
 .coupon-form {
     display: flex;
     align-items: center;
+    margin-bottom: 10px;
 }
 
 .coupon-input {
@@ -223,6 +224,11 @@
     border-color: #40a9ff;
 }
 
+.coupon-input:disabled {
+    background-color: #f9f9f9;
+    cursor: not-allowed;
+}
+
 .coupon-btn {
     height: 46px;
     padding: 0 25px;
@@ -234,10 +240,38 @@
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.2s;
+    min-width: 100px;
 }
 
-.coupon-btn:hover {
+.coupon-btn:hover:not(:disabled) {
     background-color: #40a9ff;
+}
+
+.coupon-btn:disabled {
+    background-color: #89c4ff;
+    cursor: not-allowed;
+}
+
+.coupon-btn.remove {
+    background-color: #ff4d4f;
+}
+
+.coupon-btn.remove:hover:not(:disabled) {
+    background-color: #ff7875;
+}
+
+.coupon-applied {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background-color: #f6ffed;
+    border: 1px solid #b7eb8f;
+    border-radius: 4px;
+    color: #52c41a;
+    font-size: 14px;
+}
+
+.coupon-applied strong {
+    font-weight: 600;
 }
 
 /* Cart Summary */

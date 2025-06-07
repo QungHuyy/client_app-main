@@ -1,68 +1,337 @@
-
-.bg_event{
-    height: 500px;
-    width: 320px;
-    background: #fff;
-    margin: 1rem 1rem;
-    border-radius: .5rem;
-    box-shadow:
-    inset 0 -2em 2em rgba(105, 105, 105, 0.1),
-          0 0  0 2px rgb(255,255,255),
-          0.3em 0.3em 1em rgba(105, 105, 105,0.3);
-    padding-right: 0px !important; 
-    padding-left: 0px !important;
-    overflow: hidden;
+/* Event Container */
+.event-container {
+    padding: 40px 0;
 }
 
-.h4_event{
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    color: #2e2e2e;
-    text-transform: uppercase;
+/* Event Header */
+.event-header {
+    text-align: center;
+    margin-bottom: 30px;
 }
 
-.a_event{
-    padding: .4rem 1rem;
-    color: gray !important;
-    border: 1px solid gray;
+.event-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.event-subtitle {
+    font-size: 16px;
+    color: #666;
+}
+
+/* CSS cho tab chọn loại mã giảm giá */
+.event-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #eee;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 12px 25px;
+    margin: 0 5px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #666;
     cursor: pointer;
-    border-radius: .2rem;
-    margin-top: 1rem;
+    transition: all 0.3s;
+    position: relative;
 }
 
-.a_event:hover{
-    background-color: #fed700;
-    color: #fff !important;
-    transition: all .2s ease-in-out;
-    border: 1px solid #fff;
+.tab-btn:focus {
+    outline: none;
 }
 
-hr{
-    margin: .2rem 0 0 0 !important;
-    border-bottom: 1px solid gray !important;
+.tab-btn.active {
+    color: #333;
+    font-weight: 600;
 }
 
-.a_promotion{
-    padding: .4rem 6.3rem;
-    color: #fff !important;
-    background-color: #fed700;
-    cursor: pointer;
-    border-radius: .2rem;
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #333;
 }
 
-.a_promotion:hover{
-    background-color: #e4c205;
-    transition: all .2s ease-in-out;
+.tab-btn:hover {
+    color: #333;
 }
 
-.grid-container{
+/* Coupon Grid */
+.coupon-grid {
     display: grid;
-    grid-template-columns: auto auto auto;
-    grid-template-rows: auto auto;
-    grid-auto-flow: row;
-    grid-gap: 10px;
-    padding: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-gap: 25px;
+    margin-bottom: 40px;
 }
 
-span{
-     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+/* Coupon Card */
+.coupon-card {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+    position: relative;
 }
+
+.coupon-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Cải thiện card cho mã giảm giá đã sử dụng hoặc hết hạn */
+.coupon-card.used,
+.coupon-card.expired {
+    opacity: 0.7;
+    background-color: #f5f5f5;
+}
+
+.coupon-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+}
+
+.coupon-card.available::before {
+    background-color: #52c41a;
+}
+
+.coupon-card.used::before {
+    background-color: #1890ff;
+}
+
+.coupon-card.expired::before {
+    background-color: #ff4d4f;
+}
+
+/* Coupon Header */
+.coupon-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-bottom: 1px dashed #e8e8e8;
+}
+
+.coupon-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+}
+
+.coupon-status {
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+}
+
+.coupon-status i {
+    margin-right: 5px;
+}
+
+.coupon-status.available {
+    color: #52c41a;
+}
+
+.coupon-status.used {
+    color: #1890ff;
+}
+
+.coupon-status.expired {
+    color: #ff4d4f;
+}
+
+/* Coupon Body */
+.coupon-body {
+    padding: 15px;
+}
+
+.coupon-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+    height: 40px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.coupon-discount {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.discount-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #ff6e40;
+}
+
+.discount-label {
+    display: block;
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.coupon-code-container {
+    display: flex;
+    align-items: center;
+    margin-top: 15px;
+}
+
+.coupon-code {
+    flex-grow: 1;
+    background-color: #f9f9f9;
+    border: 1px dashed #ddd;
+    border-radius: 4px;
+    padding: 10px 15px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    letter-spacing: 1px;
+}
+
+.copy-code-btn {
+    background: none;
+    border: none;
+    color: #1890ff;
+    font-size: 16px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: color 0.2s;
+}
+
+.copy-code-btn:hover {
+    color: #40a9ff;
+}
+
+/* Hiển thị thêm thông tin cho coupon */
+.coupon-description {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #666;
+}
+
+/* Coupon Footer */
+.coupon-footer {
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px dashed #e8e8e8;
+}
+
+.coupon-details-btn, .use-coupon-btn {
+    display: inline-block;
+    padding: 8px 15px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.coupon-details-btn {
+    color: #666;
+    background-color: #f5f5f5;
+    border: 1px solid #e8e8e8;
+}
+
+.coupon-details-btn:hover {
+    background-color: #e8e8e8;
+}
+
+.use-coupon-btn {
+    color: #fff;
+    background-color: #ff6e40;
+    border: none;
+}
+
+.use-coupon-btn:hover {
+    background-color: #ff5722;
+}
+
+.coupon-card.expired .coupon-footer, 
+.coupon-card.used .coupon-footer {
+    justify-content: center;
+}
+
+/* Thêm CSS cho nút sử dụng ngay chiếm hết chiều rộng */
+.full-width {
+    width: 100% !important;
+    justify-content: center;
+}
+
+/* Cải thiện UI cho phần không có mã giảm giá */
+.no-coupons {
+    width: 100%;
+    text-align: center;
+    padding: 40px 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    margin: 20px 0;
+    grid-column: 1 / -1;
+}
+
+.no-coupons i {
+    font-size: 40px;
+    color: #ccc;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.no-coupons p {
+    font-size: 16px;
+    color: #666;
+}
+
+/* Pagination Container */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .coupon-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+    
+    .coupon-footer {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .coupon-details-btn, .use-coupon-btn {
+        width: 100%;
+    }
+    
+    .event-tabs {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .tab-btn {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+} 

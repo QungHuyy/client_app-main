@@ -21,6 +21,12 @@ const CouponAPI = {
         const url = `/api/admin/coupon/${id}`
         return axiosClient.get(url)
     },
+    
+    // Kiểm tra trạng thái của mã giảm giá (đã sử dụng/chưa sử dụng/hết hạn)
+    checkCouponStatus: (code, userId) => {
+        const url = `/api/admin/coupon/promotion/checking?code=${code}&id_user=${userId}`
+        return axiosClient.get(url)
+    }
 
 }
 

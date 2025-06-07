@@ -25,6 +25,11 @@ const OrderAPI = {
     cancel_order: (query) => {
         const url = `/api/admin/Order/cancelorder${query}`
         return axiosClient.patch(url)
+    },
+
+    getOrdersByUser: (userId) => {
+        const url = `/api/Payment/orders/${userId}`
+        return axiosClient.get(url)
     }
 
 }
