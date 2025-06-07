@@ -19,6 +19,10 @@ import OrderSuccess from "./Order/OrderSuccess";
 import OrderFail from "./Order/OrderFail";
 import { lazy, Suspense } from "react";
 import OrderMomo from "./Order/OrderMomo";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.min.js';
+import $ from 'jquery';
+import Popper from 'popper.js';
 
 // Các import được comment
 // import Home from "./Home/Home";
@@ -153,7 +157,10 @@ function App() {
             <Route path="/contact" component={Contact} />
             <Route path="/signin" component={SignIn} />
             <Route path="/register" component={SignUp} />
-            <Route path="/success" component={OrderSuccess} />
+            <Route path="/success" render={() => {
+              // Force page reload to ensure clean state and proper cart clearing
+              return <OrderSuccess key={Date.now()} />;
+            }} />
             <Route path="/fail" component={OrderFail} />
             <Route path="/momo" component={OrderMomo} />
             <Route path="/history" component={History} />

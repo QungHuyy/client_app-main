@@ -3,19 +3,16 @@ const initialState = {
 }
 
 const ReducerCount = (state = initialState, action) => {
-
     switch(action.type){
         case 'CHANGE_LOAD':
-
-            state = {
+            // Đảm bảo trả về một object mới để React nhận biết trạng thái đã thay đổi
+            return {
+                ...state,
                 isLoad: !action.data
-            }
-
-            return state
+            };
         default:
-            return state
+            return state;
     }
-
 }
 
 export default ReducerCount

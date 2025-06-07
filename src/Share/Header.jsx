@@ -11,6 +11,7 @@ import Product from '../API/Product';
 import { addSearch } from '../Redux/Action/ActionSearch';
 import CartsLocal from './CartsLocal';
 import ResultDialog from './ResultDialog';
+import { subscribeToCartUpdates } from './CartEventManager';
 
 function Header(props) {
 
@@ -291,6 +292,40 @@ function Header(props) {
         history.push(`/detail/${id}`)
         set_keyword_search('') // Clear search input
     }
+
+    // Sử dụng CartEventManager để lắng nghe sự kiện cập nhật giỏ hàng
+    useEffect(() => {
+        // Hàm xử lý cập nhật hiển thị giỏ hàng
+        const updateCartDisplay = (cartItems) => {
+            let sum = 0;
+            let price = 0;
+            
+            // Tính toán lại tổng và giá
+            cartItems.forEach(item => {
+                sum += parseInt(item.count);
+                price += parseInt(item.price_product) * parseInt(item.count);
+            });
+            
+            // Cập nhật state
+            set_count_cart(sum);
+            set_total_price(price);
+            set_carts_mini(cartItems);
+            
+            console.log("Header đã cập nhật giỏ hàng thông qua CartEventManager:", sum, "sản phẩm");
+        };
+        
+        // Cập nhật ban đầu
+        const initialCartItems = JSON.parse(localStorage.getItem('carts') || '[]');
+        updateCartDisplay(initialCartItems);
+        
+        // Đăng ký lắng nghe sự kiện cập nhật giỏ hàng
+        const unsubscribe = subscribeToCartUpdates(updateCartDisplay);
+        
+        // Cleanup function
+        return () => {
+            unsubscribe();
+        };
+    }, []);
 
     return (
         <div className="header-area">

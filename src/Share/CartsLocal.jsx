@@ -1,4 +1,6 @@
 import CartAPI from '../API/CartAPI';
+import axios from 'axios';
+import axiosClient from '../API/axiosClient';
 
 const CartsLocal = {
     // Khởi tạo giỏ hàng nếu chưa tồn tại
@@ -118,9 +120,10 @@ const CartsLocal = {
             
             // Sau khi thêm/cập nhật trên server, cập nhật lại localStorage
             const updatedCart = await CartAPI.getCartByUser(userId);
+            let formattedCart = [];
             
             if (Array.isArray(updatedCart)) {
-                const formattedCart = updatedCart.map(item => ({
+                formattedCart = updatedCart.map(item => ({
                     id_cart: item._id,
                     id_product: item.id_product,
                     name_product: item.name_product,
@@ -131,6 +134,11 @@ const CartsLocal = {
                 }));
                 
                 localStorage.setItem('carts', JSON.stringify(formattedCart));
+            }
+            
+            // Thông báo cho các component khác về việc giỏ hàng đã được cập nhật
+            if (window.notifyCartUpdated) {
+                window.notifyCartUpdated(formattedCart);
             }
             
             return;
@@ -154,9 +162,10 @@ const CartsLocal = {
             // Cập nhật lại localStorage sau khi xóa trên server
             const userId = CartsLocal.getUserId();
             const updatedCart = await CartAPI.getCartByUser(userId);
+            let formattedCart = [];
             
             if (Array.isArray(updatedCart)) {
-                const formattedCart = updatedCart.map(item => ({
+                formattedCart = updatedCart.map(item => ({
                     id_cart: item._id,
                     id_product: item.id_product,
                     name_product: item.name_product,
@@ -167,6 +176,11 @@ const CartsLocal = {
                 }));
                 
                 localStorage.setItem('carts', JSON.stringify(formattedCart));
+            }
+            
+            // Thông báo cho các component khác về việc giỏ hàng đã được cập nhật
+            if (window.notifyCartUpdated) {
+                window.notifyCartUpdated(formattedCart);
             }
             
             return;
@@ -192,9 +206,10 @@ const CartsLocal = {
             // Cập nhật lại localStorage sau khi cập nhật trên server
             const userId = CartsLocal.getUserId();
             const updatedCart = await CartAPI.getCartByUser(userId);
+            let formattedCart = [];
             
             if (Array.isArray(updatedCart)) {
-                const formattedCart = updatedCart.map(item => ({
+                formattedCart = updatedCart.map(item => ({
                     id_cart: item._id,
                     id_product: item.id_product,
                     name_product: item.name_product,
@@ -205,6 +220,11 @@ const CartsLocal = {
                 }));
                 
                 localStorage.setItem('carts', JSON.stringify(formattedCart));
+            }
+            
+            // Thông báo cho các component khác về việc giỏ hàng đã được cập nhật
+            if (window.notifyCartUpdated) {
+                window.notifyCartUpdated(formattedCart);
             }
             
             return;
@@ -325,8 +345,10 @@ const CartsLocal = {
             
             // Cập nhật lại localStorage với dữ liệu mới từ server
             const updatedCart = await CartAPI.getCartByUser(userId);
+            let formattedCart = [];
+            
             if (Array.isArray(updatedCart)) {
-                const formattedCart = updatedCart.map(item => ({
+                formattedCart = updatedCart.map(item => ({
                     id_cart: item._id,
                     id_product: item.id_product,
                     name_product: item.name_product,
@@ -339,6 +361,11 @@ const CartsLocal = {
                 localStorage.setItem('carts', JSON.stringify(formattedCart));
             }
             
+            // Thông báo cho các component khác về việc giỏ hàng đã được cập nhật
+            if (window.notifyCartUpdated) {
+                window.notifyCartUpdated(formattedCart);
+            }
+            
             return true;
         } catch (error) {
             console.error("Error syncing cart to server:", error);
@@ -349,18 +376,45 @@ const CartsLocal = {
     // Xóa toàn bộ giỏ hàng
     clearCart: async () => {
         try {
+            console.log("Bắt đầu xóa giỏ hàng triệt để");
+            
             // Nếu đã đăng nhập, xóa giỏ hàng trên server
             if (CartsLocal.isLoggedIn()) {
                 const userId = CartsLocal.getUserId();
-                await CartAPI.clearCart(userId);
+                try {
+                    console.log("Xóa giỏ hàng trên server cho user ID:", userId);
+                    await CartAPI.clearCart(userId);
+                } catch (serverError) {
+                    console.error("Lỗi khi xóa giỏ hàng trên server:", serverError);
+                    // Tiếp tục xử lý ngay cả khi server lỗi
+                }
             }
             
-            // Xóa giỏ hàng trong localStorage
+            // Xóa giỏ hàng trong localStorage - luôn thực hiện bước này bất kể có lỗi ở server hay không
+            console.log("Xóa giỏ hàng trong localStorage");
             localStorage.setItem('carts', JSON.stringify([]));
             
+            // Thông báo cho các component khác về việc giỏ hàng đã được xóa
+            if (window.notifyCartUpdated) {
+                window.notifyCartUpdated([]);
+            }
+            
+            console.log("Đã hoàn thành xóa giỏ hàng");
             return true;
         } catch (error) {
-            console.error("Error clearing cart:", error);
+            console.error("Lỗi khi xóa giỏ hàng:", error);
+            // Đảm bảo vẫn xóa localStorage ngay cả khi có lỗi
+            try {
+                localStorage.setItem('carts', JSON.stringify([]));
+                console.log("Đã xóa giỏ hàng trong localStorage do có lỗi");
+                
+                // Thông báo cho các component khác về việc giỏ hàng đã được xóa
+                if (window.notifyCartUpdated) {
+                    window.notifyCartUpdated([]);
+                }
+            } catch (localError) {
+                console.error("Lỗi nghiêm trọng khi xóa localStorage:", localError);
+            }
             return false;
         }
     },
@@ -372,6 +426,11 @@ const CartsLocal = {
             
             // Xóa toàn bộ giỏ hàng khỏi localStorage
             localStorage.setItem('carts', JSON.stringify([]));
+            
+            // Thông báo cho các component khác về việc giỏ hàng đã được xóa
+            if (window.notifyCartUpdated) {
+                window.notifyCartUpdated([]);
+            }
             
             console.log("Đã xóa giỏ hàng thành công");
             return true;
