@@ -55,8 +55,25 @@ function Detail_Product(props) {
     };
 
     // Hàm này dùng để thêm vào giỏ hàng
-    const handler_addcart = (e) => {
+    const handler_addcart = async (e) => {
         e.preventDefault();
+        
+        // Kiểm tra xem người dùng đã đăng nhập chưa
+        if (!sessionStorage.getItem('id_user')) {
+            set_error_message('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!');
+            set_show_error(true);
+            
+            setTimeout(() => {
+                set_show_error(false);
+            }, 3000);
+            
+            // Thêm chuyển hướng đến trang đăng nhập sau 1.5s
+            setTimeout(() => {
+                history.push('/signin');
+            }, 1500);
+            
+            return;
+        }
         
         // Kiểm tra nếu Product hết hàng theo size đã chọn
         if (availableQuantity <= 0) {
@@ -69,44 +86,70 @@ function Detail_Product(props) {
             return;
         }
         
-        // Kiểm tra giỏ hàng hiện tại
-        const currentCart = CartsLocal.getProduct();
-        const existingItem = currentCart.find(item => 
-            item.id_product === id && item.size === size
-        );
-        const existingQuantity = existingItem ? existingItem.count : 0;
-        const totalQuantity = existingQuantity + count;
-        
-        // Kiểm tra nếu tổng số lượng vượt quá tồn kho
-        if (totalQuantity > availableQuantity) {
-            set_error_message(`Chỉ còn ${availableQuantity} sản phẩm size ${size} trong kho. Bạn đã có ${existingQuantity} trong giỏ hàng. Chỉ có thể thêm tối đa ${availableQuantity - existingQuantity} sản phẩm nữa.`);
-            set_show_error(true);
-            set_count(Math.min(count, availableQuantity - existingQuantity));
+        try {
+            // Đảm bảo giỏ hàng đã được khởi tạo
+            CartsLocal.initCart();
             
+            // Kiểm tra giỏ hàng hiện tại - sử dụng await vì getProduct là async
+            const currentCart = await CartsLocal.getProduct();
+            console.log("Giỏ hàng hiện tại:", currentCart);
+            
+            if (!Array.isArray(currentCart)) {
+                console.error("Lỗi: currentCart không phải là mảng:", currentCart);
+                set_error_message("Có lỗi xảy ra khi kiểm tra giỏ hàng");
+                set_show_error(true);
+                setTimeout(() => {
+                    set_show_error(false);
+                }, 3000);
+                return;
+            }
+            
+            // Tìm sản phẩm đã có trong giỏ hàng
+            const existingItem = currentCart.find(item => 
+                item.id_product === id && item.size === size
+            );
+            const existingQuantity = existingItem ? parseInt(existingItem.count) : 0;
+            const totalQuantity = existingQuantity + count;
+            
+            // Kiểm tra nếu tổng số lượng vượt quá tồn kho
+            if (totalQuantity > availableQuantity) {
+                set_error_message(`Chỉ còn ${availableQuantity} sản phẩm size ${size} trong kho. Bạn đã có ${existingQuantity} trong giỏ hàng. Chỉ có thể thêm tối đa ${availableQuantity - existingQuantity} sản phẩm nữa.`);
+                set_show_error(true);
+                set_count(Math.min(count, availableQuantity - existingQuantity));
+                
+                setTimeout(() => {
+                    set_show_error(false);
+                }, 3000);
+                return;
+            }
+
+            const data = {
+                id_cart: Math.random().toString(),
+                id_product: id,
+                name_product: product.name_product,
+                price_product: sale ? calculateDiscountedPrice(product.price_product, sale.promotion) : product.price_product,
+                count: count,
+                image: product.image,
+                size: size,
+            };
+
+            // Sử dụng await vì addProduct là async
+            await CartsLocal.addProduct(data);
+            const action_count_change = changeCount(count_change);
+            dispatch(action_count_change);
+            set_show_success(true);
+
+            setTimeout(() => {
+                set_show_success(false);
+            }, 3000); // Tăng thời gian hiển thị
+        } catch (error) {
+            console.error("Lỗi khi thêm sản phẩm vào giỏ hàng:", error);
+            set_error_message("Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng");
+            set_show_error(true);
             setTimeout(() => {
                 set_show_error(false);
             }, 3000);
-            return;
         }
-
-        const data = {
-            id_cart: Math.random().toString(),
-            id_product: id,
-            name_product: product.name_product,
-            price_product: sale ? calculateDiscountedPrice(product.price_product, sale.promotion) : product.price_product,
-            count: count,
-            image: product.image,
-            size: size,
-        };
-
-        CartsLocal.addProduct(data);
-        const action_count_change = changeCount(count_change);
-        dispatch(action_count_change);
-        set_show_success(true);
-
-        setTimeout(() => {
-            set_show_success(false);
-        }, 3000); // Tăng thời gian hiển thị
     };
 
     // Hàm này dùng để giảm số lượng
@@ -370,7 +413,7 @@ function Detail_Product(props) {
                         fontSize: '18px',
                         color: '#333'
                     }}></i>
-                </div>
+                        </div>
                 <div style={{
                     flex: 1,
                     textAlign: 'center',
@@ -379,7 +422,7 @@ function Detail_Product(props) {
                     marginBottom: 0
                 }}>
                     Chi tiết sản phẩm
-                </div>
+                    </div>
                 <div className="cart-button" onClick={() => history.push('/cart')} style={{
                     cursor: 'pointer',
                     padding: '8px',
@@ -423,7 +466,7 @@ function Detail_Product(props) {
                                             }}
                                         ></div>
                                     )}
-                                </div>
+                                    </div>
                                 
                                 {sale && (
                                     <div className="product-sale-badge" style={{
@@ -439,7 +482,7 @@ function Detail_Product(props) {
                                         zIndex: 1
                                     }}>
                                         -{sale.promotion}%
-                                    </div>
+                                </div>
                                 )}
                             </div>
                         </div>
@@ -517,8 +560,8 @@ function Detail_Product(props) {
                                                     fontSize: '16px',
                                                     textDecoration: 'line-through' 
                                                 }}>
-                                                    {new Intl.NumberFormat('vi-VN', { style: 'decimal', decimal: 'VND' }).format(product.price_product) + ' VNĐ'}
-                                                </del>
+                                                {new Intl.NumberFormat('vi-VN', { style: 'decimal', decimal: 'VND' }).format(product.price_product) + ' VNĐ'}
+                                            </del>
                                                 <span style={{
                                                     marginLeft: '10px',
                                                     backgroundColor: '#e80f0f',
@@ -640,7 +683,7 @@ function Detail_Product(props) {
                                                         }}>
                                                             Còn lại: <strong>{availableQuantity}</strong> sản phẩm (Size {size})
                                                         </span>
-                                                    </div>
+                                                </div>
                                                     <div style={{
                                                         display: 'flex',
                                                         alignItems: 'center'
@@ -728,11 +771,11 @@ function Detail_Product(props) {
                                                             >
                                                                 <i className="fa fa-plus" style={{ fontSize: '12px', color: '#555' }}></i>
                                                             </button>
-                                                        </div>
+                                            </div>
                                                     </div>
                                                 </div>
                                                 
-                                                {availableQuantity > 0 ? (
+                                            {availableQuantity > 0 ? (
                                                     <div>
                                                         <button 
                                                             className="add-to-cart-button" 
@@ -988,8 +1031,8 @@ function Detail_Product(props) {
                                         <div style={{ color: '#666', fontSize: '14px' }}>
                                             {list_comment.length} đánh giá
                                         </div>
-                                    </div>
-                                    
+                                                </div>
+
                                     {/* Danh sách đánh giá */}
                                     <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
                                         {list_comment.length === 0 ? (
@@ -1052,7 +1095,7 @@ function Detail_Product(props) {
                                             ))
                                         )}
                                     </div>
-                                    
+
                                     {/* Nút đánh giá */}
                                     <div className="review-btn" style={{ 
                                         marginTop: '20px',
@@ -1125,7 +1168,7 @@ function Detail_Product(props) {
                                                             cursor: 'pointer'
                                                         }}
                                                     >&times;</button>
-                                                </div>
+                                                        </div>
                                                 <div className="modal-body" style={{ padding: '20px' }}>
                                                     <div className="product-info" style={{ 
                                                         display: 'flex', 
@@ -1163,9 +1206,9 @@ function Detail_Product(props) {
                                                                     <i className="fa fa-tshirt" style={{ marginRight: '5px' }}></i>
                                                                     Size: {size}
                                                                 </span>
-                                                            </p>
-                                                        </div>
-                                                    </div>
+                                                                    </p>
+                                                                </div>
+                                                            </div>
                                                     
                                                     <h5 style={{ 
                                                         marginBottom: '15px',
@@ -1186,7 +1229,7 @@ function Detail_Product(props) {
                                                         <div style={{ textAlign: 'center' }}>
                                                             <div style={{ marginBottom: '10px', fontSize: '14px', color: '#666' }}>
                                                                 Chọn số sao (1-5)
-                                                            </div>
+                                                        </div>
                                                             <div>
                                                                 {[1, 2, 3, 4, 5].map(value => (
                                                                     <i 
@@ -1226,7 +1269,7 @@ function Detail_Product(props) {
                                                         }}>
                                                             Nội dung đánh giá:
                                                         </label>
-                                                        <textarea 
+                                                                                <textarea 
                                                             placeholder="Chia sẻ cảm nhận của bạn về sản phẩm..." 
                                                             className="form-control" 
                                                             rows="5"
@@ -1243,7 +1286,7 @@ function Detail_Product(props) {
                                                                 if(e.target.value) set_validation_comment(false);
                                                             }}
                                                             value={comment}
-                                                        ></textarea>
+                                                                                ></textarea>
                                                         {validation_comment && 
                                                             <p style={{ 
                                                                 color: '#dc3545', 
@@ -1268,7 +1311,7 @@ function Detail_Product(props) {
                                                     <button 
                                                         type="button" 
                                                         className="nut-huy"
-                                                        style={{
+                                                                                        style={{ 
                                                             backgroundColor: '#f8f9fa',
                                                             border: '1px solid #ddd',
                                                             borderRadius: '4px',
@@ -1292,21 +1335,21 @@ function Detail_Product(props) {
                                                             color: '#333',
                                                             fontWeight: 'bold',
                                                             cursor: 'pointer'
-                                                        }}
-                                                        onClick={handler_Comment}
-                                                    >
+                                                                                        }} 
+                                                                                        onClick={handler_Comment}
+                                                                                    >
                                                         Gửi đánh giá
                                                     </button>
+                                                                                </div>
+                                                                            </div>
+                                                                    </div>
+                                    </Modal>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </Modal>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
             
             {/* Sản phẩm tương tự */}
             <SimilarProducts id={id} />
@@ -1333,8 +1376,8 @@ function Detail_Product(props) {
                         <div>
                             <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>Đã thêm vào giỏ hàng</div>
                             <div style={{ fontSize: '14px' }}>{product.name_product} (Size: {size})</div>
-                        </div>
-                    </div>
+                                        </div>
+                                </div>
                     <button 
                         className="btn btn-warning" 
                         style={{ 
@@ -1349,7 +1392,7 @@ function Detail_Product(props) {
                     >
                         Xem giỏ hàng
                     </button>
-                </div>
+                            </div>
             )}
             
             {/* Thông báo lỗi khi thêm sản phẩm quá số lượng */}

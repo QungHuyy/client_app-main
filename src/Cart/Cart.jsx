@@ -31,23 +31,27 @@ function Cart(props) {
     // Hàm này dùng để hiện thị danh sách Product đã thêm vào giỏ hàng
     // và tính tổng tiền
     useEffect(() => {
-        set_list_carts(JSON.parse(localStorage.getItem('carts')) || [])
-        Sum_Price(JSON.parse(localStorage.getItem('carts')) || [], 0)
+        const fetchCart = async () => {
+            try {
+                // Lấy danh sách giỏ hàng (sẽ tự động lấy từ server nếu đã đăng nhập)
+                const carts = await CartsLocal.getProduct();
+                set_list_carts(carts);
+                Sum_Price(carts, 0);
 
-        // Lấy thông tin tồn kho của tất cả sản phẩm trong giỏ hàng
-        const fetchProductInventory = async () => {
-            const carts = JSON.parse(localStorage.getItem('carts')) || []
-            const inventory = {}
+                // Lấy thông tin tồn kho của tất cả sản phẩm trong giỏ hàng
+                const inventory = {}
+                for (const item of carts) {
+                    const product = await Product.Get_Detail_Product(item.id_product)
+                    inventory[item.id_product] = product.inventory || { S: product.number || 0, M: 0, L: 0 }
+                }
 
-            for (const item of carts) {
-                const product = await Product.Get_Detail_Product(item.id_product)
-                inventory[item.id_product] = product.inventory || { S: product.number || 0, M: 0, L: 0 }
+                setProductInventory(inventory)
+            } catch (error) {
+                console.error("Error fetching cart data:", error);
             }
+        };
 
-            setProductInventory(inventory)
-        }
-
-        fetchProductInventory()
+        fetchCart();
     }, [count_change])
 
 
@@ -64,7 +68,7 @@ function Cart(props) {
     }
 
     // Hàm này dùng để tăng số lượng
-    const upCount = (count, id_cart, id_product, size) => {
+    const upCount = async (count, id_cart, id_product, size) => {
         // Kiểm tra số lượng tồn kho của sản phẩm theo size
         const availableQuantity = productInventory[id_product] ?
             (productInventory[id_product][size] || 0) : 0
@@ -83,14 +87,22 @@ function Cart(props) {
             count: parseInt(count) + 1
         }
 
-        CartsLocal.updateProduct(data)
-
-        const action_change_count = changeCount(count_change)
-        dispatch(action_change_count)
+        try {
+            await CartsLocal.updateProduct(data)
+            const action_change_count = changeCount(count_change)
+            dispatch(action_change_count)
+        } catch (error) {
+            console.error("Error updating product quantity:", error)
+            setShowErrorStock(true)
+            setErrorMessage("Không thể cập nhật số lượng sản phẩm")
+            setTimeout(() => {
+                setShowErrorStock(false)
+            }, 2000)
+        }
     }
 
     // Hàm này dùng để giảm số lượng
-    const downCount = (count, id_cart) => {
+    const downCount = async (count, id_cart) => {
         if (parseInt(count) === 1) {
             return
         }
@@ -100,18 +112,34 @@ function Cart(props) {
             count: parseInt(count) - 1
         }
 
-        CartsLocal.updateProduct(data)
-
-        const action_change_count = changeCount(count_change)
-        dispatch(action_change_count)
+        try {
+            await CartsLocal.updateProduct(data)
+            const action_change_count = changeCount(count_change)
+            dispatch(action_change_count)
+        } catch (error) {
+            console.error("Error updating product quantity:", error)
+            setShowErrorStock(true)
+            setErrorMessage("Không thể cập nhật số lượng sản phẩm")
+            setTimeout(() => {
+                setShowErrorStock(false)
+            }, 2000)
+        }
     }
 
     // Hàm này dùng để xóa sản phẩm khỏi giỏ hàng
-    const deleteProduct = (id_cart) => {
-        CartsLocal.deleteProduct(id_cart)
-
-        const action_change_count = changeCount(count_change)
-        dispatch(action_change_count)
+    const deleteProduct = async (id_cart) => {
+        try {
+            await CartsLocal.deleteProduct(id_cart)
+            const action_change_count = changeCount(count_change)
+            dispatch(action_change_count)
+        } catch (error) {
+            console.error("Error deleting product from cart:", error)
+            setShowErrorStock(true)
+            setErrorMessage("Không thể xóa sản phẩm khỏi giỏ hàng")
+            setTimeout(() => {
+                setShowErrorStock(false)
+            }, 2000)
+        }
     }
 
 

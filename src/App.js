@@ -9,28 +9,30 @@ import "./CSS/venobox.css";
 import "./CSS/style.css";
 import "./App.css";
 import Chatbot from "./Chatbot/Chatbot";
-
+import CartsLocal from "./Share/CartsLocal";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import Header from "./Share/Header";
-// import Home from "./Home/Home";
 import Footer from "./Share/Footer";
 import SearchByAI from "./Search/SearchByAI";
+import Checkout from "./Checkout/Checkout";
+import OrderSuccess from "./Order/OrderSuccess";
+import OrderFail from "./Order/OrderFail";
+import { lazy, Suspense } from "react";
+import OrderMomo from "./Order/OrderMomo";
+
+// Các import được comment
+// import Home from "./Home/Home";
 // import Shop from "./Shop/Shop";
 // import Detail_Product from "./DetailProduct/Detail_Product";
 // import Cart from "./Cart/Cart";
-import Checkout from "./Checkout/Checkout";
 // import Favorite from "./Favorite/Favorite";
 // import About from "./About/About";
 // import Contact from "./Contact/Contact";
 // import SignIn from "./Auth/SignIn";
 // import SignUp from "./Auth/SignUp";
-import OrderSuccess from "./Order/OrderSuccess";
-import OrderFail from "./Order/OrderFail";
 // import History from "./History/History";
 // import Profile from "./Profile/Profile";
 // import Search from "./Search/Search";
-import { lazy, Suspense } from "react";
-import OrderMomo from "./Order/OrderMomo";
 // import DetailEvent from "./About/DetailEvent";
 
 const Home = lazy(() => {
@@ -113,6 +115,9 @@ const Search = lazy(() => {
   });
 });
 
+// Khởi tạo giỏ hàng ngay khi app load
+CartsLocal.initCart();
+
 function App() {
   return (
     <div className="App">
@@ -154,8 +159,8 @@ function App() {
             <Route path="/history" component={History} />
             <Route path="/profile/:id" component={Profile} />
             <Route path="/search" component={Search} />
-                    <Route path="/chatbot" element={<Chatbot />} />
-<Route path="/search-by-ai" element={<SearchByAI />} />
+            <Route path="/chatbot" component={Chatbot} />
+            <Route path="/search-by-ai" component={SearchByAI} />
 
           </Switch>
         </Suspense>

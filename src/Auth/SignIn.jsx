@@ -5,7 +5,8 @@ import queryString from 'query-string'
 import User from '../API/User';
 import { useDispatch, useSelector } from 'react-redux';
 import { addSession } from '../Redux/Action/ActionSession';
-import Cart from '../API/CartAPI';
+import CartAPI from '../API/CartAPI';
+import CartsLocal from '../Share/CartsLocal';
 import { changeCount } from '../Redux/Action/ActionCount';
 import './Auth.css';
 
@@ -64,10 +65,25 @@ function SignIn(props) {
                     set_error_username(false)
                     set_error_password(true)
                 } else {
-                    console.log(response)
+                    console.log("Đăng nhập thành công:", response)
+                    
+                    // Xử lý đăng nhập thành công
                     const action = addSession(response._id)
                     dispatch(action)
+                    
+                    // Lưu ID người dùng vào sessionStorage
                     sessionStorage.setItem('id_user', response._id)
+                    
+                    // Đồng bộ giỏ hàng từ localStorage lên server
+                    try {
+                        console.log("Bắt đầu đồng bộ giỏ hàng khi đăng nhập")
+                        const syncResult = await CartsLocal.syncCartToServer(response._id)
+                        console.log("Kết quả đồng bộ giỏ hàng:", syncResult ? "Thành công" : "Thất bại")
+                    } catch (error) {
+                        console.error("Lỗi khi đồng bộ giỏ hàng:", error)
+                    }
+                    
+                    // Cập nhật UI header với giỏ hàng mới
                     const action_count_change = changeCount(count_change)
                     dispatch(action_count_change)
                     set_redirect(true)

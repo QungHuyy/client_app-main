@@ -205,12 +205,12 @@ function Home_Product(props) {
                 } 
                 // Nếu không có gender nhưng có category
                 else if (category && category !== 'all') {
-                    const params = {
-                        id_category: category
-                    }
-                    const query = '?' + queryString.stringify(params)
-                    const response = await Product.Get_Category_Product(query)
-                    
+            const params = {
+                id_category: category
+            }
+            const query = '?' + queryString.stringify(params)
+            const response = await Product.Get_Category_Product(query)
+
                     if (response && response.length > 0) {
                         set_products(response.slice(0, 8))
                         
@@ -305,13 +305,13 @@ function Home_Product(props) {
 
     // Tạo component sản phẩm theo thiết kế mẫu Sản Phẩm Giảm Giá
     const renderProductItem = (value) => {
-        // Kiểm tra xem value có tồn tại không
-        if (!value) return null;
+                                    // Kiểm tra xem value có tồn tại không
+                                    if (!value) return null;
         
         // Lấy thông tin thống kê sản phẩm
         const stats = productStats[value._id] || { averageRating: 0, totalSold: 0 };
 
-        return (
+                                    return (
             <div key={value._id} style={{padding: '10px'}}>
                 <div className="product-item" style={{
                     border: '1px solid #e5e5e5',
@@ -338,7 +338,7 @@ function Home_Product(props) {
                     if (actions) actions.style.display = 'none';
                 }}>
                     <div style={{position: 'relative', height: '200px', width: '200px', overflow: 'hidden', margin: '0 auto'}}>
-                        <Link to={`/detail/${value._id}`}>
+                                                <Link to={`/detail/${value._id}`}>
                             <img src={optimizeCloudinaryImage(value.image)} alt={value.name_product} 
                                 style={{
                                     width: "200px", 
@@ -385,7 +385,7 @@ function Home_Product(props) {
                         }}>
                             <Link to={`/detail/${value._id}`} style={{color: '#333', textDecoration: 'none'}}>
                                 {value.name_product}
-                            </Link>
+                                                </Link>
                         </h3>
                         
                         <div style={{
@@ -412,13 +412,13 @@ function Home_Product(props) {
                                     <del style={{color: '#999', fontSize: '13px', fontStyle: 'italic', fontFamily: 'Montserrat, sans-serif'}}>
                                         {new Intl.NumberFormat('vi-VN', {style: 'decimal', decimal: 'VND'}).format(value.price_product) + ' VND'}
                                     </del>
-                                </div>
+                                            </div>
                             ) : (
                                 <div style={{color: '#e80f0f', fontWeight: 'bold', fontSize: '15px', fontFamily: 'Montserrat, sans-serif'}}>
                                     {new Intl.NumberFormat('vi-VN', {style: 'decimal', decimal: 'VND'}).format(value.price_product) + ' VND'}
-                                </div>
+                                                        </div>
                             )}
-                        </div>
+                                                    </div>
                         
                         <div style={{
                             fontSize: '12px', 
@@ -427,8 +427,8 @@ function Home_Product(props) {
                             fontFamily: 'Montserrat, sans-serif'
                         }}>
                             Đã bán: {stats.totalSold || 0}
-                        </div>
-                    </div>
+                                                    </div>
+                                                </div>
                     
                     <div className="product-actions" style={{
                         position: 'absolute',
@@ -440,8 +440,8 @@ function Home_Product(props) {
                     }}>
                         <button 
                             className="btn btn-sm btn-light mr-2"
-                            data-toggle="modal"
-                            data-target={`#${value._id}`}
+                                                            data-toggle="modal"
+                                                            data-target={`#${value._id}`}
                             onClick={() => GET_id_modal(`${value._id}`)}
                             style={{width: '30px', height: '30px', padding: '0', borderRadius: '50%'}}
                         >
@@ -453,10 +453,10 @@ function Home_Product(props) {
                         >
                             <i className="fa fa-heart-o"></i>
                         </button>
-                    </div>
-                </div>
-            </div>
-        );
+                                            </div>
+                                        </div>
+                                    </div>
+                                    );
     };
 
     if (loading) {
@@ -494,8 +494,8 @@ function Home_Product(props) {
             <div className="product-slider-container" style={{position: 'relative', margin: '0 -10px'}}>
                 <Slider {...finalSettings} className="product-slider">
                     {products && products.map(value => renderProductItem(value))}
-                </Slider>
-            </div>
+                        </Slider>
+                    </div>
         );
     }
 
@@ -507,7 +507,7 @@ function Home_Product(props) {
                     {renderProductItem(value)}
                 </div>
             ))}
-        </div>
+            </div>
     );
 }
 

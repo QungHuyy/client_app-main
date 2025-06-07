@@ -60,62 +60,62 @@ function SignUp(props) {
             setPhoneError(true);
             return;
         }
-        
+
         if (!fullname) {
             setFullnameError(true)
             return
         }
 
         if (!username) {
-            setUsernameError(true)
-            return
+                setUsernameError(true)
+                return
         }
 
         if (!password) {
-            setPasswordError(true)
-            return
+                    setPasswordError(true)
+                    return
         }
 
         if (!confirm) {
-            setConfirmError(true)
-            return
+                        setConfirmError(true)
+                        return
         }
 
         if (password !== confirm) {
-            setCheckPass(true)
-            return
+                            setCheckPass(true)
+                            return
         }
 
         setIsLoading(true)
-        
-        const fetchData = async () => {
-            try {
-                const data = {
-                    email: email,
+                            
+                            const fetchData = async () => {
+                                try {
+                                    const data = {
+                                        email: email,
                     phone: phone,
-                    username: username,
-                    password: password,
-                    fullname: fullname,
-                    id_permission: '6087dcb5f269113b3460fce4'
-                }
+                                        username: username,
+                                        password: password,
+                                        fullname: fullname,
+                                        id_permission: '6087dcb5f269113b3460fce4'
+                                    }
 
-                const response = await User.Post_User(data)
-                console.log(response)
+                                    const response = await User.Post_User(data)
+                                    console.log(response)
 
-                if (response === 'User Da Ton Tai') {
-                    set_username_exist(true)
-                } else {
-                    set_show_success(true)
+                                    if (response === 'User Da Ton Tai') {
+                                        set_username_exist(true)
+                                    } else {
+                                        set_show_success(true)
                     clearForm()
-                }
-            } catch (error) {
-                console.error("Đăng ký thất bại:", error)
+                                    }
+                                } catch (error) {
+                                    console.error("Đăng ký thất bại:", error)
             } finally {
                 setIsLoading(false)
-            }
-        }
+                                }
+                            }
 
-        fetchData()
+                            fetchData()
         
         setTimeout(() => {
             set_show_success(false)
@@ -138,13 +138,13 @@ function SignUp(props) {
                     <div className="notification-content">
                         <div className="notification-icon">
                             <i className="fa fa-check-circle"></i>
-                        </div>
+                            </div>
                         <div className="notification-message">Bạn đã đăng ký thành công!</div>
                         <button className="close-button" onClick={() => set_show_success(false)}>
                             <i className="fa fa-times"></i>
                         </button>
+                        </div>
                     </div>
-                </div>
             }
 
             <div className="breadcrumb-area">
@@ -192,7 +192,7 @@ function SignUp(props) {
                                                     <div className="invalid-feedback">
                                                         Email không hợp lệ
                                                     </div>
-                                                }
+                                            }  
                                             </div>
                                         </div>
                                         <div className="col-md-6">
@@ -218,7 +218,7 @@ function SignUp(props) {
                                                     <div className="invalid-feedback">
                                                         Số điện thoại không hợp lệ
                                                     </div>
-                                                }
+                                            }  
                                             </div>
                                         </div>
                                     </div>
@@ -245,8 +245,8 @@ function SignUp(props) {
                                             <div className="invalid-feedback">
                                                 Vui lòng nhập họ tên
                                             </div>
-                                        }
-                                    </div>
+                                            }
+                                        </div>
                                     
                                     <div className="form-group">
                                         <label htmlFor="username">Tên đăng nhập <span className="required">*</span></label>
@@ -276,8 +276,8 @@ function SignUp(props) {
                                             <div className="invalid-feedback">
                                                 Tên đăng nhập đã tồn tại
                                             </div>
-                                        }
-                                    </div>
+                                            }
+                                        </div>
                                     
                                     <div className="row">
                                         <div className="col-md-6">

@@ -94,12 +94,23 @@ function Header(props) {
 
     // Hàm này dùng để xử lý phần log out
     const handler_logout = () => {
-
+        console.log("Đăng xuất người dùng");
+        
+        // Xóa phiên người dùng trong Redux
         const action = deleteSession('')
         dispatch(action)
-
+        
+        // Xóa toàn bộ giỏ hàng khi đăng xuất
+        CartsLocal.clearCartOnLogout();
+        
+        // Xóa thông tin người dùng khỏi sessionStorage
         sessionStorage.clear()
-
+        
+        // Cập nhật UI
+        const action_change_count = changeCount(count)
+        dispatch(action_change_count)
+        
+        console.log("Đã đăng xuất và xóa giỏ hàng");
     }
 
 
@@ -109,15 +120,25 @@ function Header(props) {
     // Hàm này dùng để load lại dữ liệu giỏ hàng ở phần header khi có bất kì thay đổi nào
     // Phụ thuộc vào thằng redux count
     useEffect(() => {
+        const loadCartData = async () => {
+            try {
+                if (count) {
+                    // Lấy giỏ hàng (sẽ tự động lấy từ server nếu đã đăng nhập)
+                    const carts = await CartsLocal.getProduct();
+                    showData(carts, 0, 0);
 
-        if (count) {
+                    const action = changeCount(count);
+                    dispatch(action);
+                }
+            } catch (error) {
+                console.error("Error loading cart data:", error);
+                // Fallback to localStorage if server request fails
+                const localCarts = JSON.parse(localStorage.getItem('carts') || '[]');
+                showData(localCarts, 0, 0);
+            }
+        };
 
-            showData(JSON.parse(localStorage.getItem('carts')), 0, 0)
-
-            const action = changeCount(count)
-            dispatch(action)
-        }
-
+        loadCartData();
     }, [count])
 
     // Hàm này là hàm con chia ra để xử lý
@@ -138,13 +159,14 @@ function Header(props) {
 
 
     // Hàm này dùng để Delete carts_mini
-    const handler_delete_mini = (id_cart) => {
-
-        CartsLocal.deleteProduct(id_cart)
-
-        const action_change_count = changeCount(count)
-        dispatch(action_change_count)
-
+    const handler_delete_mini = async (id_cart) => {
+        try {
+            await CartsLocal.deleteProduct(id_cart)
+            const action_change_count = changeCount(count)
+            dispatch(action_change_count)
+        } catch (error) {
+            console.error("Error deleting product from cart:", error)
+        }
     }
 
     

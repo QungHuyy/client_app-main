@@ -207,7 +207,7 @@ function Products(props) {
                                     }}>
                                         <Link to={`/detail/${value._id}`} style={{color: '#333', textDecoration: 'none'}}>
                                             {value.name_product}
-                                        </Link>
+                                </Link>
                                     </h3>
                                     
                                     <div style={{
@@ -234,11 +234,11 @@ function Products(props) {
                                                 <del style={{color: '#999', fontSize: '13px', fontStyle: 'italic', fontFamily: 'Montserrat, sans-serif'}}>
                                                     {new Intl.NumberFormat('vi-VN', {style: 'decimal', decimal: 'VND'}).format(value.price_product) + ' VND'}
                                                 </del>
-                                            </div>
+                            </div>
                                         ) : (
                                             <div style={{color: '#e80f0f', fontWeight: 'bold', fontSize: '15px', fontFamily: 'Montserrat, sans-serif'}}>
                                                 {new Intl.NumberFormat('vi-VN', {style: 'decimal', decimal: 'VND'}).format(value.price_product) + ' VND'}
-                                            </div>
+                                        </div>
                                         )}
                                     </div>
                                     
