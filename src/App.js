@@ -151,7 +151,7 @@ function App() {
 
             <Route path="/contact" component={Contact} />
             <Route path="/signin" component={SignIn} />
-            <Route path="/signup" component={SignUp} />
+            <Route path="/register" component={SignUp} />
             <Route path="/success" component={OrderSuccess} />
             <Route path="/fail" component={OrderFail} />
             <Route path="/momo" component={OrderMomo} />

@@ -9,6 +9,7 @@ import queryString from 'query-string'
 import CartsLocal from '../Share/CartsLocal';
 import CouponAPI from '../API/CouponAPI';
 import Product from '../API/Product';
+import './Cart.css';
 
 Cart.propTypes = {
 
@@ -69,7 +70,11 @@ function Cart(props) {
             (productInventory[id_product][size] || 0) : 0
 
         if (parseInt(count) >= availableQuantity) {
-            alert(`Chỉ còn ${availableQuantity} sản phẩm size ${size} trong kho!`)
+            setShowErrorStock(true)
+            setErrorMessage(`Chỉ còn ${availableQuantity} sản phẩm size ${size} trong kho!`)
+            setTimeout(() => {
+                setShowErrorStock(false)
+            }, 2000)
             return
         }
 
@@ -112,8 +117,9 @@ function Cart(props) {
 
     // Hàm này này dùng để kiểm tra đăng nhập checkout
     const [show_error, set_show_error] = useState(false)
-
     const [show_null_cart, set_show_null_cart] = useState(false)
+    const [showErrorStock, setShowErrorStock] = useState(false)
+    const [errorMessage, setErrorMessage] = useState('')
 
     const handler_checkout = () => {
 
@@ -124,28 +130,21 @@ function Cart(props) {
                 window.location.replace('/checkout')
             }
         } else {
-
             set_show_error(true)
-
         }
 
         setTimeout(() => {
             set_show_error(false)
             set_show_null_cart(false)
         }, 1500)
-
     }
 
 
     // Hàm này dùng để kiểm tra coupon
     const [coupon, set_coupon] = useState('')
-
     const [discount, setDiscount] = useState(0)
-
     const [new_price, set_new_price] = useState(0)
-
     const [show_success, set_show_success] = useState(false)
-
     const [errorCode, setErrorCode] = useState(false)
 
     const handlerCoupon = async (e) => {
@@ -208,169 +207,241 @@ function Cart(props) {
     }
 
     return (
-        <div>
-            {
-                errorCode &&
-                <div className="modal_success">
-                    <div className="group_model_success pt-3">
-                        <div className="text-center p-2">
-                            <i className="fa fa-bell fix_icon_bell" style={{ fontSize: '40px', color: '#fff', backgroundColor: '#f84545' }}></i>
+        <div className="cart-page-container">
+            {/* Thông báo lỗi kho hàng */}
+            {showErrorStock && (
+                <div className="notification-modal error-modal">
+                    <div className="notification-content">
+                        <div className="notification-icon">
+                            <i className="fa fa-exclamation-circle"></i>
                         </div>
-                        <h4 className="text-center p-3" style={{ color: '#fff' }}>Vui Lòng Kiểm Tra Lại Mã Code!</h4>
+                        <div className="notification-message">{errorMessage}</div>
+                        <button className="close-button" onClick={() => setShowErrorStock(false)}>
+                            <i className="fa fa-times"></i>
+                        </button>
                     </div>
                 </div>
-            }
-            {
-                show_success &&
-                <div className="modal_success">
-                    <div className="group_model_success pt-3">
-                        <div className="text-center p-2">
-                            <i className="fa fa-bell fix_icon_bell" style={{ fontSize: '40px', color: '#fff' }}></i>
+            )}
+            
+            {/* Các thông báo khác */}
+            {errorCode && (
+                <div className="notification-modal error-modal">
+                    <div className="notification-content">
+                        <div className="notification-icon">
+                            <i className="fa fa-exclamation-circle"></i>
                         </div>
-                        <h4 className="text-center p-3" style={{ color: '#fff' }}>Áp Dụng Mã Code Thành Công!</h4>
+                        <div className="notification-message">Mã giảm giá không hợp lệ!</div>
+                        <button className="close-button" onClick={() => setErrorCode(false)}>
+                            <i className="fa fa-times"></i>
+                        </button>
                     </div>
                 </div>
-            }
-            {
-                show_error &&
-                <div className="modal_success">
-                    <div className="group_model_success pt-3">
-                        <div className="text-center p-2">
-                            <i className="fa fa-bell fix_icon_bell" style={{ fontSize: '40px', color: '#fff', backgroundColor: '#f84545' }}></i>
+            )}
+            
+            {show_success && (
+                <div className="notification-modal success-modal">
+                    <div className="notification-content">
+                        <div className="notification-icon">
+                            <i className="fa fa-check-circle"></i>
                         </div>
-                        <h4 className="text-center p-3" style={{ color: '#fff' }}>Vui Lòng Kiểm Tra Tình Trạng Đăng Nhập!</h4>
+                        <div className="notification-message">Áp dụng mã giảm giá thành công!</div>
+                        <button className="close-button" onClick={() => set_show_success(false)}>
+                            <i className="fa fa-times"></i>
+                        </button>
                     </div>
                 </div>
-            }
-            {
-                show_null_cart &&
-                <div className="modal_success">
-                    <div className="group_model_success pt-3">
-                        <div className="text-center p-2">
-                            <i className="fa fa-bell fix_icon_bell" style={{ fontSize: '40px', color: '#fff', backgroundColor: '#f84545' }}></i>
+            )}
+            
+            {show_error && (
+                <div className="notification-modal error-modal">
+                    <div className="notification-content">
+                        <div className="notification-icon">
+                            <i className="fa fa-exclamation-circle"></i>
                         </div>
-                        <h4 className="text-center p-3" style={{ color: '#fff' }}>Vui Lòng Kiểm Tra Lại Giỏ Hàng!</h4>
+                        <div className="notification-message">Vui lòng đăng nhập để tiếp tục!</div>
+                        <button className="close-button" onClick={() => set_show_error(false)}>
+                            <i className="fa fa-times"></i>
+                        </button>
                     </div>
                 </div>
-            }
+            )}
+            
+            {show_null_cart && (
+                <div className="notification-modal error-modal">
+                    <div className="notification-content">
+                        <div className="notification-icon">
+                            <i className="fa fa-exclamation-circle"></i>
+                        </div>
+                        <div className="notification-message">Giỏ hàng của bạn đang trống!</div>
+                        <button className="close-button" onClick={() => set_show_null_cart(false)}>
+                            <i className="fa fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            )}
 
             <div className="breadcrumb-area">
                 <div className="container">
                     <div className="breadcrumb-content">
                         <ul>
-                            <li><Link to="/">Home</Link></li>
-                            <li className="active">Shopping Cart</li>
+                            <li><Link to="/">Trang chủ</Link></li>
+                            <li className="active">Giỏ hàng</li>
                         </ul>
                     </div>
                 </div>
             </div>
 
-            <div className="Shopping-cart-area pt-60 pb-60">
+            <div className="shopping-cart-area pt-60 pb-60">
                 <div className="container">
                     <div className="row">
                         <div className="col-12">
-                            {
-                                list_carts && list_carts.length > 0 ? (
-                                    <form action="#">
-                                        <div className="table-content table-responsive">
-                                            <table className="table">
-                                                <thead>
-                                                    <tr>
-                                                        <th className="li-product-remove">Remove</th>
-                                                        <th className="li-product-thumbnail">Images</th>
-                                                        <th className="cart-product-name">Product</th>
-                                                        <th className="li-product-price">Unit Price</th>
-                                                        <th className="li-product-price">Size</th>
-                                                        <th className="li-product-quantity">Quantity</th>
-                                                        <th className="li-product-subtotal">Total</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {
-                                                        list_carts && list_carts.map((value, index) => {
-                                                            const availableQuantity = productInventory[value.id_product] ?
-                                                                (productInventory[value.id_product][value.size] || 0) : 0
+                            {list_carts && list_carts.length > 0 ? (
+                                <div className="cart-content">
+                                    <h2 className="cart-title">Giỏ hàng của bạn</h2>
+                                    <div className="table-content table-responsive">
+                                        <table className="table cart-table">
+                                            <thead>
+                                                <tr>
+                                                    <th className="li-product-remove">Xóa</th>
+                                                    <th className="li-product-thumbnail">Hình ảnh</th>
+                                                    <th className="cart-product-name">Sản phẩm</th>
+                                                    <th className="li-product-price">Đơn giá</th>
+                                                    <th className="li-product-price">Size</th>
+                                                    <th className="li-product-quantity">Số lượng</th>
+                                                    <th className="li-product-subtotal">Thành tiền</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {list_carts && list_carts.map((value, index) => {
+                                                    const availableQuantity = productInventory[value.id_product] ?
+                                                        (productInventory[value.id_product][value.size] || 0) : 0
 
-                                                            return (
-                                                                <tr key={index}>
-                                                                    <td className="li-product-remove">
-                                                                        <a style={{ cursor: 'pointer' }} onClick={() => deleteProduct(value.id_cart)}>
-                                                                            <i className="fa fa-times"></i>
-                                                                        </a>
-                                                                    </td>
-                                                                    <td className="li-product-thumbnail">
-                                                                        <Link to={`/detail/${value.id_product}`}>
-                                                                            <img src={value.image} style={{ width: '5rem' }} alt="Li's Product Image" />
-                                                                        </Link>
-                                                                    </td>
-                                                                    <td className="li-product-name">
-                                                                        <a href="#">{value.name_product}</a>
-                                                                    </td>
-                                                                    <td className="li-product-price">
-                                                                        <span className="amount">
-                                                                            {new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(value.price_product)+ ' VNĐ'}
-                                                                        </span>
-                                                                    </td>
-                                                                    <td className="li-product-price">
-                                                                        <span className="amount">{value.size}</span>
-                                                                        {availableQuantity < value.count && (
-                                                                            <div className="text-danger">
-                                                                                <small>Chỉ còn {availableQuantity} sản phẩm</small>
-                                                                            </div>
-                                                                        )}
-                                                                    </td>
-                                                                    <td className="quantity">
-                                                                        <label>Quantity</label>
-                                                                        <div className="cart-plus-minus">
-                                                                            <input className="cart-plus-minus-box" value={value.count} type="text" readOnly />
-                                                                            <div className="dec qtybutton" onClick={() => downCount(value.count, value.id_cart)}>
-                                                                                <i className="fa fa-angle-down"></i>
-                                                                            </div>
-                                                                            <div className="inc qtybutton" onClick={() => upCount(value.count, value.id_cart, value.id_product, value.size)}>
-                                                                                <i className="fa fa-angle-up"></i>
-                                                                            </div>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="product-subtotal">
-                                                                        <span className="amount">
-                                                                            {new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(parseInt(value.price_product) * parseInt(value.count))+ ' VNĐ'}
-                                                                        </span>
-                                                                    </td>
-                                                                </tr>
-                                                            )
-                                                        })
-                                                    }
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-12">
-                                                <div class="coupon-all">
-                                                    <div class="coupon">
-                                                        <input id="coupon_code" class="input-text" onChange={(e) => set_coupon(e.target.value)} value={coupon} placeholder="Coupon code" type="text" /> &nbsp;
-                                                        <input class="button" value="Apply coupon" type="submit" onClick={handlerCoupon} />
+                                                    return (
+                                                        <tr key={index} className="cart-item">
+                                                            <td className="li-product-remove">
+                                                                <button className="remove-btn" onClick={() => deleteProduct(value.id_cart)}>
+                                                                    <i className="fa fa-trash"></i>
+                                                                </button>
+                                                            </td>
+                                                            <td className="li-product-thumbnail">
+                                                                <Link to={`/detail/${value.id_product}`} className="product-image">
+                                                                    <img src={value.image} alt={value.name_product} />
+                                                                </Link>
+                                                            </td>
+                                                            <td className="li-product-name">
+                                                                <Link to={`/detail/${value.id_product}`} className="product-name">
+                                                                    {value.name_product}
+                                                                </Link>
+                                                            </td>
+                                                            <td className="li-product-price">
+                                                                <span className="amount">
+                                                                    {new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(value.price_product)+ ' VNĐ'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="li-product-size">
+                                                                <span className="size">{value.size}</span>
+                                                                {availableQuantity < value.count && (
+                                                                    <div className="stock-warning">
+                                                                        <small>Chỉ còn {availableQuantity} sản phẩm</small>
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                            <td className="quantity">
+                                                                <div className="quantity-control">
+                                                                    <button 
+                                                                        className="quantity-btn dec" 
+                                                                        onClick={() => downCount(value.count, value.id_cart)}
+                                                                        disabled={parseInt(value.count) === 1}
+                                                                    >
+                                                                        <i className="fa fa-minus"></i>
+                                                                    </button>
+                                                                    <input 
+                                                                        className="quantity-input" 
+                                                                        value={value.count} 
+                                                                        type="text" 
+                                                                        readOnly 
+                                                                    />
+                                                                    <button 
+                                                                        className="quantity-btn inc" 
+                                                                        onClick={() => upCount(value.count, value.id_cart, value.id_product, value.size)}
+                                                                    >
+                                                                        <i className="fa fa-plus"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                            <td className="product-subtotal">
+                                                                <span className="amount">
+                                                                    {new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(parseInt(value.price_product) * parseInt(value.count))+ ' VNĐ'}
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    )
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <div className="cart-bottom-area">
+                                        <div className="row">
+                                            <div className="col-lg-7 col-md-6">
+                                                <div className="coupon-area">
+                                                    <div className="coupon-form">
+                                                        <input 
+                                                            type="text" 
+                                                            className="coupon-input" 
+                                                            onChange={(e) => set_coupon(e.target.value)} 
+                                                            value={coupon} 
+                                                            placeholder="Nhập mã giảm giá" 
+                                                        />
+                                                        <button 
+                                                            className="coupon-btn" 
+                                                            onClick={handlerCoupon}
+                                                        >
+                                                            Áp dụng
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div className="row">
-                                            <div className="col-md-5 ml-auto">
-                                                <div className="cart-page-total">
-                                                    <h2>Cart totals</h2>
-                                                    <ul>
-                                                        <li>Sub Total <span>{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(total_price) + ' VNĐ'}</span></li>
-                                                        <li>Discount <span>{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(discount) + ' VNĐ'}</span></li>
-                                                        <li>Total <span>{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(new_price) + ' VNĐ'}</span></li>
-                                                    </ul>
-                                                    <a style={{ color: '#fff', cursor: 'pointer', fontWeight: '600' }} onClick={handler_checkout}>Proceed to checkout</a>
+                                            <div className="col-lg-5 col-md-6">
+                                                <div className="cart-summary">
+                                                    <h3 className="summary-title">Tổng giỏ hàng</h3>
+                                                    <div className="summary-content">
+                                                        <div className="summary-item">
+                                                            <span className="summary-label">Tạm tính:</span>
+                                                            <span className="summary-value">{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(total_price) + ' VNĐ'}</span>
+                                                        </div>
+                                                        <div className="summary-item">
+                                                            <span className="summary-label">Giảm giá:</span>
+                                                            <span className="summary-value discount">{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(discount) + ' VNĐ'}</span>
+                                                        </div>
+                                                        <div className="summary-item total">
+                                                            <span className="summary-label">Tổng cộng:</span>
+                                                            <span className="summary-value">{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(discount > 0 ? new_price : total_price) + ' VNĐ'}</span>
+                                                        </div>
+                                                    </div>
+                                                    <button 
+                                                        className="checkout-btn" 
+                                                        onClick={handler_checkout}
+                                                    >
+                                                        Tiến hành thanh toán
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
-                                    </form>
-                                ) : (
-                                    <h3>Giỏ hàng trống</h3>
-                                )
-                            }
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="empty-cart">
+                                    <div className="empty-cart-icon">
+                                        <i className="fa fa-shopping-cart"></i>
+                                    </div>
+                                    <h3>Giỏ hàng của bạn đang trống</h3>
+                                    <p>Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm</p>
+                                    <Link to="/" className="continue-shopping-btn">
+                                        Tiếp tục mua sắm
+                                    </Link>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

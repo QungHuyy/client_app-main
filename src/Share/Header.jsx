@@ -458,10 +458,10 @@ function Header(props) {
                                             ) : (
                                                 <>
                                                     <Link className="dropdown-item" to="/signin">
-                                                        <i className="fa fa-sign-in mr-2"></i> Đăng nhập
+                                                        <i className="fa fa-sign-in mr-2"></i> Đăng Nhập
                                                     </Link>
                                                     <Link className="dropdown-item" to="/register">
-                                                        <i className="fa fa-user-plus mr-2"></i> Đăng ký
+                                                        <i className="fa fa-user-plus mr-2"></i> Đăng Ký
                                                     </Link>
                                                 </>
                                             )}

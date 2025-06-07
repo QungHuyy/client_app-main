@@ -1,0 +1,373 @@
+/* Auth Container */
+.auth-container {
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Auth Section */
+.auth-section {
+    padding: 50px 0;
+    background-color: #f8f9fa;
+}
+
+/* Auth Form Container */
+.auth-form-container {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    padding: 40px;
+    margin-bottom: 30px;
+}
+
+/* Auth Header */
+.auth-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.auth-header h2 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.auth-header p {
+    font-size: 16px;
+    color: #666;
+}
+
+/* Auth Form */
+.auth-form {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.form-group .required {
+    color: #ff4d4f;
+}
+
+/* Input Group */
+.input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.input-icon {
+    position: absolute;
+    left: 15px;
+    color: #999;
+    font-size: 16px;
+    z-index: 10;
+}
+
+.form-control {
+    width: 100%;
+    height: 48px;
+    padding: 10px 15px 10px 45px;
+    font-size: 14px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    transition: all 0.3s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #40a9ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+.form-control.is-invalid {
+    border-color: #ff4d4f;
+}
+
+.invalid-feedback {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #ff4d4f;
+}
+
+/* Auth Options */
+.auth-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+}
+
+.remember-me input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.remember-me label {
+    margin-bottom: 0;
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+}
+
+.forgot-password a {
+    font-size: 14px;
+    color: #1890ff;
+    text-decoration: none;
+}
+
+.forgot-password a:hover {
+    text-decoration: underline;
+}
+
+/* Auth Button */
+.auth-button {
+    display: block;
+    width: 100%;
+    height: 48px;
+    background-color: #ff6e40;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.auth-button:hover {
+    background-color: #ff5722;
+}
+
+.auth-button:disabled {
+    background-color: #ffa28a;
+    cursor: not-allowed;
+}
+
+/* Auth Separator */
+.auth-separator {
+    position: relative;
+    text-align: center;
+    margin: 25px 0;
+}
+
+.auth-separator::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #e0e0e0;
+}
+
+.auth-separator span {
+    position: relative;
+    background-color: #fff;
+    padding: 0 15px;
+    color: #999;
+    font-size: 14px;
+}
+
+/* Social Login */
+.social-login {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.social-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 48px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    background-color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.social-button i {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+.social-button.facebook {
+    color: #fff;
+    background-color: #3b5998;
+    border-color: #3b5998;
+}
+
+.social-button.facebook:hover {
+    background-color: #2d4373;
+}
+
+.social-button.google {
+    color: #fff;
+    background-color: #db4437;
+    border-color: #db4437;
+}
+
+.social-button.google:hover {
+    background-color: #c31e1a;
+}
+
+/* Auth Footer */
+.auth-footer {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.auth-footer p {
+    font-size: 14px;
+    color: #666;
+}
+
+.auth-footer a {
+    color: #1890ff;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Terms and Policy */
+.terms-policy {
+    margin-bottom: 25px;
+}
+
+.custom-checkbox {
+    display: flex;
+    align-items: flex-start;
+}
+
+.custom-checkbox input {
+    margin-right: 10px;
+    margin-top: 3px;
+}
+
+.custom-checkbox label {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 0;
+}
+
+.custom-checkbox a {
+    color: #1890ff;
+    text-decoration: none;
+}
+
+.custom-checkbox a:hover {
+    text-decoration: underline;
+}
+
+/* Notification Modal */
+.notification-modal {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    animation: slideIn 0.3s ease-out forwards;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 15px 20px;
+    min-width: 300px;
+    max-width: 450px;
+}
+
+.notification-icon {
+    margin-right: 15px;
+    font-size: 24px;
+}
+
+.error-modal .notification-icon {
+    color: #ff4d4f;
+}
+
+.success-modal .notification-icon {
+    color: #52c41a;
+}
+
+.notification-message {
+    flex-grow: 1;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    margin-left: 10px;
+    transition: color 0.2s;
+}
+
+.close-button:hover {
+    color: #333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .auth-form-container {
+        padding: 30px 20px;
+    }
+    
+    .auth-options {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .forgot-password {
+        margin-top: 10px;
+    }
+    
+    .auth-button {
+        height: 46px;
+    }
+    
+    .social-button {
+        height: 46px;
+    }
+} 

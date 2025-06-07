@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { addSession } from '../Redux/Action/ActionSession';
 import Cart from '../API/CartAPI';
 import { changeCount } from '../Redux/Action/ActionCount';
+import './Auth.css';
 
 SignIn.propTypes = {
     
@@ -21,6 +22,7 @@ function SignIn(props) {
 
     const [error_username, set_error_username] = useState(false)
     const [error_password, set_error_password] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
 
     const [redirect, set_redirect] = useState(false)
 
@@ -32,6 +34,18 @@ function SignIn(props) {
 
     const handler_signin = (e) => {
         e.preventDefault()
+
+        if (!username.trim()) {
+            set_error_username(true)
+            return
+        }
+
+        if (!password.trim()) {
+            set_error_password(true)
+            return
+        }
+
+        setIsLoading(true)
 
         const fetchData = async () => {
             try {
@@ -61,6 +75,8 @@ function SignIn(props) {
             } catch (error) {
                 console.error("Đăng nhập thất bại:", error)
                 set_error_username(true)
+            } finally {
+                setIsLoading(false)
             }
         }
 
@@ -68,56 +84,97 @@ function SignIn(props) {
     }
 
     return (
-        <div>
+        <div className="auth-container">
             <div className="breadcrumb-area">
                 <div className="container">
                     <div className="breadcrumb-content">
                         <ul>
-                            <li><Link to="/">Home</Link></li>
-                            <li className="active">Login</li>
+                            <li><Link to="/">Trang chủ</Link></li>
+                            <li className="active">Đăng nhập</li>
                         </ul>
                     </div>
                 </div>
             </div>
-            <div className="page-section mb-60">
+            <div className="auth-section">
                 <div className="container">
-                    <div className="row">
-                        <div className="col-sm-12 col-md-12 col-xs-12 col-lg-6 mb-30 mr_signin">
-                            <form action="#" >
-                                <div className="login-form">
-                                    <h4 className="login-title">Login</h4>
-                                    <div className="row">
-                                        <div className="col-md-12 col-12 mb-20">
-                                            <label>Username *</label>
-                                            <input className="mb-0" type="text" placeholder="Username" value={username} onChange={(e) => set_username(e.target.value)} />
-                                            {
-                                                error_username && <span style={{ color: 'red' }}>* Wrong Username!</span>
-                                            }
-                                        </div>
-                                        <div className="col-12 mb-20">
-                                            <label>Password</label>
-                                            <input className="mb-0" type="password" placeholder="Password" value={password} onChange={(e) => set_password(e.target.value)} />
-                                            {
-                                                error_password && <span style={{ color: 'red' }}>* Wrong Password!</span>
-                                            }
-                                        </div>
-                                        <div className="col-md-8">
-                                            <div className="check-box d-inline-block ml-0 ml-md-2 mt-10">
-                                                <Link to="/signup">Do You Have Account?</Link>
-                                            </div>
-                                        </div>
-                                        <div className="col-md-4 mt-10 mb-20 text-left text-md-right">
-                                            <a href="#"> Forgotten pasward?</a>
-                                        </div>
-                                        <div className="col-md-12">
-                                            {
-                                                redirect && <Redirect to="/" />
-                                            }
-                                            <button className="register-button mt-0" style={{ cursor: 'pointer'}} onClick={handler_signin}>Login</button>
-                                        </div>
-                                    </div>
+                    <div className="row justify-content-center">
+                        <div className="col-lg-6 col-md-8">
+                            <div className="auth-form-container">
+                                <div className="auth-header">
+                                    <h2>Đăng nhập</h2>
+                                    <p>Đăng nhập để mua hàng và theo dõi đơn hàng của bạn</p>
                                 </div>
-                            </form>
+                                <form className="auth-form" onSubmit={handler_signin}>
+                                    <div className="form-group">
+                                        <label htmlFor="username">Tên đăng nhập <span className="required">*</span></label>
+                                        <div className="input-group">
+                                            <div className="input-icon">
+                                                <i className="fa fa-user"></i>
+                                            </div>
+                                            <input 
+                                                type="text" 
+                                                id="username"
+                                                className={`form-control ${error_username ? 'is-invalid' : ''}`}
+                                                placeholder="Nhập tên đăng nhập" 
+                                                value={username} 
+                                                onChange={(e) => {
+                                                    set_username(e.target.value)
+                                                    set_error_username(false)
+                                                }} 
+                                            />
+                                        </div>
+                                        {error_username && 
+                                            <div className="invalid-feedback">
+                                                Tên đăng nhập không chính xác
+                                            </div>
+                                        }
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="password">Mật khẩu <span className="required">*</span></label>
+                                        <div className="input-group">
+                                            <div className="input-icon">
+                                                <i className="fa fa-lock"></i>
+                                            </div>
+                                            <input 
+                                                type="password" 
+                                                id="password"
+                                                className={`form-control ${error_password ? 'is-invalid' : ''}`} 
+                                                placeholder="Nhập mật khẩu" 
+                                                value={password} 
+                                                onChange={(e) => {
+                                                    set_password(e.target.value)
+                                                    set_error_password(false)
+                                                }} 
+                                            />
+                                        </div>
+                                        {error_password && 
+                                            <div className="invalid-feedback">
+                                                Mật khẩu không chính xác
+                                            </div>
+                                        }
+                                    </div>
+
+                                    <div className="form-group">
+                                        <button 
+                                            type="submit" 
+                                            className="auth-button"
+                                            disabled={isLoading}
+                                        >
+                                            {isLoading ? (
+                                                <>
+                                                    <span className="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span>
+                                                    Đang đăng nhập...
+                                                </>
+                                            ) : 'Đăng nhập'}
+                                        </button>
+                                    </div>
+
+                                </form>
+                                <div className="auth-footer">
+                                    <p>Bạn chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link></p>
+                                </div>
+                                {redirect && <Redirect to="/" />}
+                            </div>
                         </div>
                     </div>
                 </div>
