@@ -30,6 +30,16 @@ const Product = {
     get_search_list: (query) => {
         const url = `/api/Product/scoll/page${query}`
         return axiosClient.get(url)
+    },
+
+    Get_New_Products: (limit = 8) => {
+        const url = `/api/Product/new?limit=${limit}`
+        return axiosClient.get(url)
+    },
+
+    Get_Best_Selling: (limit = 8) => {
+        const url = `/api/Product/bestseller?limit=${limit}`
+        return axiosClient.get(url)
     }
 
 }
