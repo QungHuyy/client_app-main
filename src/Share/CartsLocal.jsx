@@ -1,13 +1,25 @@
-
-
 const CartsLocal = {
+
+    getProduct: () => {
+        // Kiểm tra xem localStorage có key 'carts' không
+        const cartData = localStorage.getItem('carts');
+        
+        // Nếu không có hoặc rỗng, trả về mảng rỗng
+        if (!cartData) {
+            localStorage.setItem('carts', JSON.stringify([]));
+            return [];
+        }
+        
+        // Nếu có, parse JSON và trả về
+        return JSON.parse(cartData);
+    },
 
     addProduct: (data) => {
         //Lấy dữ liệu từ local
         const data_add_cart = data
 
         //Lấy dữ liệu có sẵn trong state
-        const add_cart = JSON.parse(localStorage.getItem('carts'))
+        const add_cart = CartsLocal.getProduct();
 
         console.log(add_cart.length)
         console.log(data_add_cart)
@@ -58,7 +70,7 @@ const CartsLocal = {
 
     deleteProduct: (data) => {
         //Lấy dữ diệu có sẵn trong state
-        const delete_cart = JSON.parse(localStorage.getItem('carts'))
+        const delete_cart = CartsLocal.getProduct();
 
         console.log(data)
 
@@ -76,7 +88,7 @@ const CartsLocal = {
     updateProduct: (data) => {
         const data_update_cart = data
             
-        const update_cart = JSON.parse(localStorage.getItem('carts'))
+        const update_cart = CartsLocal.getProduct();
 
         const index = update_cart.findIndex(value => {
             return value.id_cart === data_update_cart.id_cart

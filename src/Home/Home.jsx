@@ -256,7 +256,7 @@ function Home(props) {
 
             <div className="container">
                 {/* Phần danh mục sản phẩm */}
-                <Home_Category GET_id_modal={GET_id_modal} />
+            <Home_Category GET_id_modal={GET_id_modal} />
 
                 {/* Phần sản phẩm mới */}
                 <section className="product-area pt-60 pb-45" style={{fontFamily: 'Montserrat, sans-serif'}}>

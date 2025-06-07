@@ -322,7 +322,7 @@ function Header(props) {
                             <form className="hm-searchbox" onSubmit={handler_search} style={{position: 'relative'}}>
                                 <input 
                                     type="text" 
-                                    placeholder="Enter your search key ..." 
+                                    placeholder="Nhập từ khóa tìm kiếm..." 
                                     value={keyword_search} 
                                     onChange={(e) => set_keyword_search(e.target.value)} 
                                     style={{

@@ -45,6 +45,11 @@ const Product = {
     Get_Product_Stats: (id) => {
         const url = `/api/Product/stats/${id}`
         return axiosClient.get(url)
+    },
+    
+    Get_Similar_Products: (id, limit = 8) => {
+        const url = `/api/Product/similar/${id}?limit=${limit}`
+        return axiosClient.get(url)
     }
 
 }

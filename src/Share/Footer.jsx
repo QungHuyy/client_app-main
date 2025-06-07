@@ -69,16 +69,16 @@ function Footer(props) {
                                 <div className="footer-logo">
                                     <img src={Global.Logo} style={{ width: '20rem'}} alt="Footer Logo" />
                                     <p className="info">
-                                        We are a team of designers and developers that create high quality HTML Template & Woocommerce, Shopify Theme.
+                                        Chúng tôi là đội ngũ thiết kế và phát triển chuyên tạo ra các sản phẩm thời trang chất lượng cao.
                                 </p>
                                 </div>
                                 <ul className="des">
                                     <li>
-                                        <span>Address: </span>
+                                        <span>Địa chỉ: </span>
                                     Quang Trung, La Khê, Hà Đông, Hà Nội
                                 </li>
                                     <li>
-                                        <span>Phone: </span>
+                                        <span>Điện thoại: </span>
                                         <a href="#">0763557366</a>
                                     </li>
                                     <li>
@@ -89,34 +89,34 @@ function Footer(props) {
                             </div>
                                 <div className="col-lg-2 col-md-3 col-sm-6">
                                     <div className="footer-block">
-                                        <h3 className="footer-block-title">Product</h3>
+                                        <h3 className="footer-block-title">Sản phẩm</h3>
                                         <ul>
-                                            <li><a href="#">Prices drop</a></li>
-                                            <li><a href="#">New products</a></li>
-                                            <li><a href="#">Best sales</a></li>
-                                            <li><a href="#">Contact us</a></li>
+                                            <li><a href="#">Giảm giá</a></li>
+                                            <li><a href="#">Sản phẩm mới</a></li>
+                                            <li><a href="#">Bán chạy nhất</a></li>
+                                            <li><a href="#">Liên hệ</a></li>
                                         </ul>
                                     </div>
                                 </div>
                             <div className="col-lg-2 col-md-3 col-sm-6">
                                 <div className="footer-block">
-                                    <h3 className="footer-block-title">Our company</h3>
+                                    <h3 className="footer-block-title">Công ty</h3>
                                         <ul>
-                                            <li><a href="#">Delivery</a></li>
-                                            <li><a href="#">Legal Notice</a></li>
-                                            <li><a href="#">About us</a></li>
-                                            <li><a href="#">Contact us</a></li>
+                                            <li><a href="#">Giao hàng</a></li>
+                                            <li><a href="#">Điều khoản</a></li>
+                                            <li><a href="#">Về chúng tôi</a></li>
+                                            <li><a href="#">Liên hệ</a></li>
                                       </ul>
                                 </div>
                             </div>
                             <div className="col-lg-4">  
                                 <div className="footer-newsletter">
-                                    <h4>Sign up to newsletter</h4>
+                                    <h4>Đăng ký nhận tin</h4>
                                     <form action="#" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" className="footer-subscribe-form validate" target="_blank">
                                         <div id="mc_embed_signup_scroll">
                                             <div id="mc-form" className="mc-form subscribe-form form-group" >
-                                                <input id="mc-email" type="email" autoComplete="off" placeholder="Enter your email" />
-                                                <button className="btn" id="mc-submit">Subscribe</button>
+                                                <input id="mc-email" type="email" autoComplete="off" placeholder="Nhập email của bạn" />
+                                                <button className="btn" id="mc-submit">Đăng ký</button>
                                             </div>
                                         </div>
                                     </form>
