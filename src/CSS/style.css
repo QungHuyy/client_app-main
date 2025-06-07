@@ -603,20 +603,23 @@ label {
 /* Product Card Styling */
 .product-item {
     border: 1px solid #e5e5e5;
-    border-radius: 0;
+    border-radius: 8px;
     overflow: hidden;
     background-color: #fff;
     position: relative;
-    margin-bottom: 20px;
-    height: 410px !important;
+    height: 410px;
     width: 100%;
     display: flex;
     flex-direction: column;
     transition: all 0.3s;
+    font-family: 'Montserrat', sans-serif;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
 }
 
 .product-item:hover {
     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transform: translateY(-5px);
 }
 
 .product-item .product-image-container {
@@ -801,6 +804,10 @@ label {
     padding: 0 20px;
 }
 
+.product-item:hover .product-actions {
+    display: flex;
+}
+
 .product-actions {
     position: absolute;
     bottom: 10px;
@@ -808,10 +815,6 @@ label {
     display: none;
     transition: all 0.3s;
     gap: 5px;
-}
-
-.product-item:hover .product-actions {
-    display: flex;
 }
 
 .product-actions button {
@@ -924,4 +927,195 @@ label {
 /* Improve slider navigation buttons */
 .product-slider .slick-arrow {
     z-index: 9;
+}
+
+/* Cải thiện trang Shop */
+.shop-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.shop-top-bar-right {
+    display: flex;
+    align-items: center;
+}
+
+.product-found {
+    font-size: 14px;
+    color: #666;
+}
+
+.product-found strong {
+    color: #333;
+    font-weight: 600;
+}
+
+.filter-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    background-color: #fed700;
+    color: #333;
+    font-weight: bold;
+    border-radius: 50%;
+    margin-left: 10px;
+    font-size: 12px;
+}
+
+/* Cải thiện sidebar */
+.li-blog-sidebar {
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.li-blog-sidebar-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.li-blog-archive li {
+    margin-bottom: 10px;
+}
+
+.li-blog-archive li a {
+    color: #666;
+    font-size: 14px;
+    transition: all 0.3s;
+    display: block;
+    padding: 5px 0;
+}
+
+.li-blog-archive li a:hover {
+    color: #fed700;
+    padding-left: 5px;
+}
+
+/* Trạng thái loading */
+.spinner-border {
+    display: inline-block;
+    width: 2rem;
+    height: 2rem;
+    vertical-align: text-bottom;
+    border: 0.25em solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spinner-border .75s linear infinite;
+}
+
+@keyframes spinner-border {
+    to { transform: rotate(360deg); }
+}
+
+.text-primary {
+    color: #fed700 !important;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+.py-5 {
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+}
+
+.mt-2 {
+    margin-top: 0.5rem !important;
+}
+
+.mt-3 {
+    margin-top: 1rem !important;
+}
+
+/* Empty state */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.empty-state h4 {
+    margin-top: 20px;
+    font-weight: 600;
+    color: #333;
+}
+
+.empty-state p {
+    color: #666;
+    text-align: center;
+}
+
+/* Pagination */
+.paginatoin-area {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.pagination-box {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.pagination-box li {
+    margin: 0 5px;
+}
+
+.pagination-box li a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    background-color: #f5f5f5;
+    color: #333;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.pagination-box li.active a,
+.pagination-box li a:hover {
+    background-color: #fed700;
+    color: #333;
+}
+
+/* Responsive */
+@media only screen and (max-width: 767px) {
+    .shop-top-bar {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .product-select-box {
+        width: 100%;
+    }
+    
+    .shop-top-bar-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .pagination-box {
+        justify-content: center;
+    }
 }
