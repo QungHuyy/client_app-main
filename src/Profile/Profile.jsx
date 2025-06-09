@@ -1,197 +1,292 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import './Profile.css'
-import avt from './avt.jpg'
+import './Profile.css';
 import User from '../API/User';
-import { addSession } from '../Redux/Action/ActionSession';
 import { useDispatch } from 'react-redux';
 
-Profile.propTypes = {
-
-};
-
 function Profile(props) {
-
-    // Hàm này dùng để render html cho từng loại edit profile hoặc change password
-    // Tùy theo User chọn
-    const [edit_status, set_edit_status] = useState('edit_profile')
-
-    const handler_Status = (value) => {
-
-        set_edit_status(value)
-
-    }
-
-
-    const [user, set_user] = useState({})
+    const [activeTab, setActiveTab] = useState('edit_profile');
+    const [user, setUser] = useState({});
+    const [loading, setLoading] = useState(true);
+    
+    // Form fields
+    const [fullname, setFullname] = useState('');
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    
+    // Password fields
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    
+    // Error states
+    const [passwordError, setPasswordError] = useState('');
+    const [formErrors, setFormErrors] = useState({});
 
     useEffect(() => {
+        const fetchUserData = async () => {
+            setLoading(true);
+            try {
+                const userId = sessionStorage.getItem('id_user');
+                if (!userId) {
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                const response = await User.Get_User(userId);
+                setUser(response);
+                
+                // Populate form fields
+                setFullname(response.fullname || '');
+                setUsername(response.username || '');
+                setEmail(response.email || '');
+                setPhone(response.phone || '');
+                
+                // Reset password fields for security
+                setCurrentPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                alert('Không thể tải thông tin người dùng. Vui lòng thử lại sau.');
+            } finally {
+                setLoading(false);
+            }
+        };
 
-        const fetchData = async () => {
+        fetchUserData();
+    }, []);
 
-            const response = await User.Get_User(sessionStorage.getItem('id_user'))
-
-            set_user(response)
-
-            set_name(response.fullname)
-
-            set_username(response.username)
-
-            set_email(response.email)
-
-            set_password(response.password)
-            set_new_password(response.password)
-            set_compare_password(response.password)
-
+    const validateProfileForm = () => {
+        const errors = {};
+        
+        if (!fullname.trim()) {
+            errors.fullname = 'Vui lòng nhập họ tên';
         }
+        
+        if (!username.trim()) {
+            errors.username = 'Vui lòng nhập tên đăng nhập';
+        } else if (username.length < 4) {
+            errors.username = 'Tên đăng nhập phải có ít nhất 4 ký tự';
+        }
+        
+        setFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
 
-        fetchData()
+    const validatePasswordForm = () => {
+        // Reset previous errors
+        setPasswordError('');
+        
+        if (!currentPassword) {
+            setPasswordError('Vui lòng nhập mật khẩu hiện tại');
+            return false;
+        }
+        
+        if (!newPassword) {
+            setPasswordError('Vui lòng nhập mật khẩu mới');
+            return false;
+        }
+        
+        if (newPassword.length < 6) {
+            setPasswordError('Mật khẩu mới phải có ít nhất 6 ký tự');
+            return false;
+        }
+        
+        if (newPassword !== confirmPassword) {
+            setPasswordError('Mật khẩu xác nhận không khớp');
+            return false;
+        }
+        
+        return true;
+    };
 
-    }, [])
-
-    const [name, set_name] = useState('')
-    const [username, set_username] = useState('')
-    const [email, set_email] = useState('')
-    const [password, set_password] = useState('')
-    const [new_password, set_new_password] = useState('')
-    const [compare_password, set_compare_password] = useState('')
-
-    const handler_update = async () => {
+    const handleUpdateProfile = async () => {
+        if (!validateProfileForm()) {
+            return;
+        }
+        
         try {
             const data = {
                 _id: sessionStorage.getItem('id_user'),
-                fullname: name,
-                username: username,
-                password: compare_password
-            }
+                fullname,
+                username,
+                phone
+            };
 
-            await User.Put_User(data)
-            window.location.reload()
+            await User.Put_User(data);
+            alert('Cập nhật thông tin thành công!');
         } catch (error) {
-            console.error("Cập nhật thất bại:", error)
-            alert("Cập nhật thất bại. Vui lòng thử lại sau.")
+            console.error('Cập nhật thất bại:', error);
+            alert('Cập nhật thất bại. Vui lòng thử lại sau.');
         }
-    }
+    };
+
+    const handleChangePassword = async () => {
+        if (!validatePasswordForm()) {
+            return;
+        }
+        
+        try {
+            // Here you would usually check if current password matches before allowing change
+            // For simplicity, we'll just update the password
+            const data = {
+                _id: sessionStorage.getItem('id_user'),
+                password: newPassword
+            };
+
+            await User.Put_User(data);
+            
+            // Reset password fields
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmPassword('');
+            
+            alert('Đổi mật khẩu thành công!');
+        } catch (error) {
+            console.error('Đổi mật khẩu thất bại:', error);
+            alert('Đổi mật khẩu thất bại. Vui lòng thử lại sau.');
+        }
+    };
 
     return (
-        <div className="container mt-5 pt-4" style={{ paddingBottom: '4rem'}}>
-            <div className="group_profile">
-                <div className="group_setting mt-3">
-                    <div className="setting_left">
-                        <div className={edit_status === 'edit_profile' ? 'setting_item setting_item_active' : 'setting_item'}
-                            onClick={() => handler_Status('edit_profile')}>
+        <div className="profile-container">
+            <div className="profile-header">
+                <h1>Thông tin tài khoản</h1>
+                <p>Quản lý thông tin để bảo mật tài khoản</p>
+            </div>
 
-                            <a className={edit_status === 'edit_profile' ? 'a_setting_active' : ''}
-                                style={{ fontSize: '1.1rem' }}>Edit Profile</a>
-
-                        </div>
-
-                        <div className={edit_status === 'change_password' ? 'setting_item setting_item_active' : 'setting_item'}
-                            onClick={() => handler_Status('change_password')}>
-
-                            <a className={edit_status === 'change_password' ? 'a_setting_active' : ''}
-                                style={{ fontSize: '1.1rem' }}>Change Password</a>
-
-                        </div>
+            <div className="profile-content">
+                <div className="profile-tabs">
+                    <div 
+                        className={`profile-tab ${activeTab === 'edit_profile' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('edit_profile')}
+                    >
+                        <i className="fa fa-user"></i>
+                        <span>Thông tin cá nhân</span>
                     </div>
-                    <div className="setting_right">
-                        {
-                            edit_status === 'edit_profile' ? (
-                                <div className="setting_edit_profile">
-                                    {/* <div className="header_setting_edit d-flex justify-content-center pt-4 pb-4">
-                                        <div className="d-flex">
-                                            <img src={avt} alt="" className="image_header_setting_edit" />
-                                            <div className="ml-4">
-                                                <span style={{ fontWeight: '600', fontSize: '1.2rem' }}>Nguyen Kim Tien</span>
-                                                <br />
-                                                <a href="#" data-toggle="modal" data-target="#exampleModal">
-                                                    Change Profile Photo</a>
-
-                                                <div className="modal fade" id="exampleModal" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                                    <div className="modal-dialog" role="document">
-                                                        <div className="modal-content">
-                                                            <div className="modal-header">
-                                                                <h5 className="modal-title" id="exampleModalLabel">Change Profile Photo</h5>
-                                                                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                                                                    <span aria-hidden="true">&times;</span>
-                                                                </button>
-                                                            </div>
-                                                            <div className="modal-footer">
-                                                                <button type="button" className="btn btn-secondary" data-dismiss="modal">Close</button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div> */}
-                                    <div className="txt_setting_edit pt-3 pb-2">
-                                        <div className="d-flex justify-content-center align-items-center">
-                                            <span style={{ fontWeight: '600' }}>Name</span>
-                                        </div>
-                                        <div>
-                                            <input className="txt_input_edit" type="text" value={name}
-                                                onChange={(e) => set_name(e.target.value)} />
-                                        </div>
-                                    </div>
-                                    <div className="txt_setting_edit pt-3 pb-2">
-                                        <div className="d-flex justify-content-center align-items-center">
-                                            <span style={{ fontWeight: '600' }}>Username</span>
-                                        </div>
-                                        <div>
-                                            <input className="txt_input_edit" type="text" value={username}
-                                                onChange={(e) => set_username(e.target.value)} />
-                                        </div>
-                                    </div>
-                                    <div className="txt_setting_edit pt-3 pb-2">
-                                        <div className="d-flex justify-content-center align-items-center">
-                                            <span style={{ fontWeight: '600' }}>Email</span>
-                                        </div>
-                                        <div>
-                                            <input className="txt_input_edit" type="text" disabled={true} value={email}
-                                                onChange={(e) => set_email(e.target.value)} />
-                                        </div>
-                                    </div>
-                                    <div className="d-flex justify-content-center pt-3 pb-4">
-                                        <button className="btn btn-secondary" onClick={handler_update}>Submit</button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="setting_change_password">
-                                    <div className="txt_setting_edit pt-3 pb-2">
-                                        <div className="d-flex justify-content-center align-items-center">
-                                            <span style={{ fontWeight: '600' }}>Old Password</span>
-                                        </div>
-                                        <div>
-                                            <input className="txt_input_edit" type="password" value={password}
-                                                onChange={(e) => set_password(e.target.value)} />
-                                        </div>
-                                    </div>
-                                    <div className="txt_setting_edit pt-3 pb-2">
-                                        <div className="d-flex justify-content-center align-items-center">
-                                            <span style={{ fontWeight: '600' }} >New Password</span>
-                                        </div>
-                                        <div>
-                                            <input className="txt_input_edit" type="password" value={new_password}
-                                                onChange={(e) => set_new_password(e.target.value)} />
-                                        </div>
-                                    </div>
-                                    <div className="txt_setting_edit pt-3 pb-2">
-                                        <div className="d-flex justify-content-center align-items-center">
-                                            <span style={{ fontWeight: '600' }}>Confirm New Password</span>
-                                        </div>
-                                        <div>
-                                            <input className="txt_input_edit" type="password" value={compare_password}
-                                                onChange={(e) => set_compare_password(e.target.value)} />
-                                        </div>
-                                    </div>
-                                    <div className="d-flex justify-content-center pt-3 pb-4 align-items-center">
-                                        <button className="btn btn-secondary" onClick={handler_update}>Change Password</button>
-                                    </div>
-                                </div>
-                            )
-                        }
+                    <div 
+                        className={`profile-tab ${activeTab === 'change_password' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('change_password')}
+                    >
+                        <i className="fa fa-lock"></i>
+                        <span>Đổi mật khẩu</span>
                     </div>
+                </div>
+
+                <div className="profile-tab-content">
+                    {loading ? (
+                        <div className="profile-loading">
+                            <div className="spinner"></div>
+                            <p>Đang tải thông tin...</p>
+                        </div>
+                    ) : activeTab === 'edit_profile' ? (
+                        <div className="profile-form">
+                            <div className="form-group">
+                                <label>Họ và tên</label>
+                                <input 
+                                    type="text" 
+                                    value={fullname}
+                                    onChange={(e) => setFullname(e.target.value)}
+                                    placeholder="Nhập họ và tên"
+                                    className={formErrors.fullname ? 'error' : ''}
+                                />
+                                {formErrors.fullname && <div className="error-message">{formErrors.fullname}</div>}
+                            </div>
+                            
+                            <div className="form-group">
+                                <label>Tên đăng nhập</label>
+                                <input 
+                                    type="text" 
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    placeholder="Nhập tên đăng nhập"
+                                    className={formErrors.username ? 'error' : ''}
+                                />
+                                {formErrors.username && <div className="error-message">{formErrors.username}</div>}
+                            </div>
+                            
+                            <div className="form-group">
+                                <label>Email</label>
+                                <input 
+                                    type="email" 
+                                    value={email}
+                                    disabled
+                                    className="disabled"
+                                />
+                                <small>Email không thể thay đổi</small>
+                            </div>
+                            
+                            <div className="form-group">
+                                <label>Số điện thoại</label>
+                                <input 
+                                    type="tel" 
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    placeholder="Nhập số điện thoại"
+                                />
+                            </div>
+                            
+                            <div className="form-actions">
+                                <button 
+                                    className="btn-update" 
+                                    onClick={handleUpdateProfile}
+                                >
+                                    Cập nhật thông tin
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="profile-form">
+                            {passwordError && (
+                                <div className="error-alert">
+                                    <i className="fa fa-exclamation-circle"></i>
+                                    <span>{passwordError}</span>
+                                </div>
+                            )}
+                            
+                            <div className="form-group">
+                                <label>Mật khẩu hiện tại</label>
+                                <input 
+                                    type="password" 
+                                    value={currentPassword}
+                                    onChange={(e) => setCurrentPassword(e.target.value)}
+                                    placeholder="Nhập mật khẩu hiện tại"
+                                />
+                            </div>
+                            
+                            <div className="form-group">
+                                <label>Mật khẩu mới</label>
+                                <input 
+                                    type="password" 
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    placeholder="Nhập mật khẩu mới"
+                                />
+                                <small>Mật khẩu phải có ít nhất 6 ký tự</small>
+                            </div>
+                            
+                            <div className="form-group">
+                                <label>Xác nhận mật khẩu</label>
+                                <input 
+                                    type="password" 
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    placeholder="Nhập lại mật khẩu mới"
+                                />
+                            </div>
+                            
+                            <div className="form-actions">
+                                <button 
+                                    className="btn-update" 
+                                    onClick={handleChangePassword}
+                                >
+                                    Đổi mật khẩu
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

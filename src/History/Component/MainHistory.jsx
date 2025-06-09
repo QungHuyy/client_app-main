@@ -1,151 +1,251 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import queryString from 'query-string'
+import queryString from 'query-string';
 import OrderAPI from '../../API/OrderAPI';
+import Detail_OrderAPI from '../../API/Detail_OrderAPI';
+import './History.css';
 
-MainHistory.propTypes = {
-
-};
+MainHistory.propTypes = {};
 
 function MainHistory(props) {
+    const [history, setHistory] = useState([]);
+    const [isLoad, setIsLoad] = useState(true);
+    const [showError, setShowError] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [orderDetails, setOrderDetails] = useState({});
 
-    const [history, set_history] = useState([])
-
-    const [isLoad, setIsLoad] = useState(true)
-
-    useEffect(() => {
-
-        const fetchData = async () => {
-
-            const response = await OrderAPI.get_order(sessionStorage.getItem('id_user'))
-
-            console.log(response)
-
-            set_history(response)
-
-        }
-
-        fetchData()
-
-    }, [isLoad])
-
-    const [show_error, set_show_error] = useState(false)
-
-    const deleteOrder = async (id, pay) => {
-
-        if (pay === true){
-            set_show_error(true)
-
-            setTimeout(() => {
-                set_show_error(false)
-            }, 2000)
-            return
-        }
-
-        if (!show_error){
-            const params = {
-                id: id
-            }
-    
-            const query = '?' + queryString.stringify(params)
-    
-            const response = await OrderAPI.cancel_order(query)
-    
-            console.log(response)
-    
-            setIsLoad(!isLoad)
-        }
-    }
-
-    return (
-        <div>
-
-            {
-                show_error &&
-                <div className="modal_success">
-                    <div className="group_model_success pt-3">
-                        <div className="text-center p-2">
-                            <i className="fa fa-bell fix_icon_bell" style={{ fontSize: '40px', color: '#fff', backgroundColor: '#f84545' }}></i>
-                        </div>
-                        <h4 className="text-center p-3" style={{ color: '#fff' }}>Không Thể Hủy Vì Đơn Hàng Đã Được Thanh Toán!</h4>
-                    </div>
-                </div>
+    // Hàm sắp xếp đơn hàng theo thời gian
+    const sortOrdersByDate = (orders) => {
+        return [...orders].sort((a, b) => {
+            // Kiểm tra các trường thời gian có thể có
+            const dateA = a.createdAt || a.create_time;
+            const dateB = b.createdAt || b.create_time;
+            
+            if (!dateA) return 1;
+            if (!dateB) return -1;
+            
+            // Nếu là định dạng DD/MM/YYYY
+            if (typeof dateA === 'string' && dateA.includes('/')) {
+                const [dayA, monthA, yearA] = dateA.split('/').map(Number);
+                const [dayB, monthB, yearB] = dateB.split('/').map(Number);
+                return new Date(yearB, monthB - 1, dayB) - new Date(yearA, monthA - 1, dayA);
             }
             
-            <div className="breadcrumb-area">
-                <div className="container">
-                    <div className="breadcrumb-content">
-                        <ul>
-                            <li><Link to="/">Home</Link></li>
-                            <li className="active">History</li>
-                        </ul>
+            // Nếu là định dạng timestamp hoặc ISO date
+            return new Date(dateB) - new Date(dateA);
+        });
+    };
+    
+    // Lấy chi tiết sản phẩm cho mỗi đơn hàng
+    const fetchOrderDetails = async (orders) => {
+        const details = {};
+        
+        for (const order of orders) {
+            try {
+                const response = await Detail_OrderAPI.get_detail_order(order._id);
+                details[order._id] = response;
+            } catch (error) {
+                console.error(`Error fetching details for order ${order._id}:`, error);
+                details[order._id] = [];
+            }
+        }
+        
+        setOrderDetails(details);
+    };
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const response = await OrderAPI.get_order(sessionStorage.getItem('id_user'));
+                
+                // Sắp xếp đơn hàng theo thời gian từ gần nhất đến xa nhất
+                const sortedOrders = sortOrdersByDate(response);
+                console.log("Sorted orders:", sortedOrders);
+                setHistory(sortedOrders);
+                
+                // Lấy chi tiết sản phẩm cho mỗi đơn hàng
+                fetchOrderDetails(sortedOrders);
+            } catch (error) {
+                console.error("Error fetching order history:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [isLoad]);
+
+    const deleteOrder = async (id, pay) => {
+        if (pay === true) {
+            setShowError(true);
+            setTimeout(() => {
+                setShowError(false);
+            }, 2000);
+            return;
+        }
+
+        if (!showError) {
+            const params = {
+                id: id
+            };
+    
+            const query = '?' + queryString.stringify(params);
+    
+            try {
+                const response = await OrderAPI.cancel_order(query);
+                console.log(response);
+                setIsLoad(!isLoad);
+            } catch (error) {
+                console.error("Error cancelling order:", error);
+            }
+        }
+    };
+
+    const getStatusClass = (status) => {
+        switch(status) {
+            case '1': return 'status-processing';
+            case '2': return 'status-confirmed';
+            case '3': return 'status-shipping';
+            case '4': return 'status-finished';
+            default: return 'status-canceled';
+        }
+    };
+
+    const getStatusText = (status) => {
+        switch(status) {
+            case '1': return 'Đang xử lý';
+            case '2': return 'Đã xác nhận';
+            case '3': return 'Đang giao';
+            case '4': return 'Hoàn thành';
+            default: return 'Đã hủy';
+        }
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A';
+        return dateString;
+    };
+
+    return (
+        <div className="order-history-container">
+            {showError && (
+                <div className="modal_error">
+                    <div className="error-notification">
+                        <div className="error-icon">
+                            <i className="fa fa-exclamation-circle"></i>
+                        </div>
+                        <h4>Không Thể Hủy Vì Đơn Hàng Đã Được Thanh Toán!</h4>
                     </div>
                 </div>
-            </div>
-
-            <div className="Shopping-cart-area pt-60 pb-60">
+            )}
+            
+            <div className="order-history-area pt-60 pb-60">
                 <div className="container">
                     <div className="row">
                         <div className="col-12">
-                            <form action="#">
-                                <div className="table-content table-responsive">
-                                    <table className="table">
-                                        <thead>
-                                            <tr>
-                                                <th className="li-product-remove">ID Invoice</th>
-                                                <th className="li-product-thumbnail">Name</th>
-                                                <th className="cart-product-name">Phone</th>
-                                                <th className="li-product-price">Address</th>
-                                                <th className="li-product-quantity">Total</th>
-                                                <th className="li-product-subtotal">Payment</th>
-                                                <th className="li-product-subtotal">Status</th>
-                                                <th className="li-product-subtotal">Cancel</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {
-                                                history && history.map(value => (
-                                                    <tr key={value._id}>
-                                                        <td className="li-product-price"><span className="amount"><Link to={`/history/${value._id}`}>View</Link></span></td>
-                                                        <td className="li-product-price"><span className="amount">{value.id_note.fullname}</span></td>
-                                                        <td className="li-product-price"><span className="amount">{value.id_note.phone}</span></td>
-                                                        <td className="li-product-price"><span className="amount">{value.address}</span></td>
-
-                                                        <td className="li-product-price"><span className="amount">{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(value.total) + ' VNĐ'}</span></td>
-                                                        <td className="li-product-price"><span className="amount" style={value.pay ? { color: 'green' } : { color: 'red' }}>{value.pay ? 'Paid' : 'Unpaid'}</span></td>
-                                                        <td className="li-product-price"><span className="amount" >
-                                                            {
-                                                                value.status === '1' ? 'Processing' :
-                                                                    (value.status === '2' ? 'Confirmed' :
-                                                                        (value.status === '3' ? 'Shipping' :
-                                                                            (value.status === '4' ? 'Finished' : 'Canceled')))}
-                                                        </span>
-                                                        </td>
-                                                        <td className="li-product-price">
-                                                        {(() => {
-                                                            switch(value.status) {
-                                                                case '1' || '2':
-                                                                    return <span onClick={() => deleteOrder(value._id, value.pay)} className="text-danger" style={{ cursor: 'pointer' }}>X</span>
-                                                                case '2':
-                                                                    return <span onClick={() => deleteOrder(value._id, value.pay)} className="text-danger" style={{ cursor: 'pointer' }}>X</span>
-                                                                case '3':
-                                                                    return <i className="fa fa-check text-success" style={{ fontSize: '25px' }}></i>
-                                                                case '4':
-                                                                    return <i className="fa fa-check text-success" style={{ fontSize: '25px' }}></i>
-                                                                default:
-                                                                    return <span className="text-danger">Cancelled</span>
-                                                            }
-                                                        })()}
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            }
-
-                                        </tbody>
-                                    </table>
+                            <div className="section-title text-center mb-30">
+                                <h2>Lịch sử đơn hàng của bạn</h2>
+                                <p>Theo dõi trạng thái đơn hàng và quản lý các đơn hàng đã đặt</p>
+                            </div>
+                            
+                            {loading ? (
+                                <div className="text-center py-5">
+                                    <div className="spinner-border text-warning" role="status">
+                                        <span className="sr-only">Đang tải...</span>
+                                    </div>
                                 </div>
-                            </form>
+                            ) : history.length === 0 ? (
+                                <div className="empty-order-history text-center py-5">
+                                    <i className="fa fa-shopping-bag empty-icon"></i>
+                                    <h3>Bạn chưa có đơn hàng nào</h3>
+                                    <p>Hãy khám phá các sản phẩm của chúng tôi và đặt hàng ngay!</p>
+                                    <Link to="/shop" className="btn-shop-now">Mua sắm ngay</Link>
+                                </div>
+                            ) : (
+                                <div className="order-history-wrapper">
+                                    {history.map(order => (
+                                        <div className="order-card" key={order._id}>
+                                            <div className="order-header">
+                                                <div className="order-id">
+                                                    <span>Mã đơn hàng:</span>
+                                                    <Link to={`/history/${order._id}`} className="view-detail">
+                                                        {order._id.substring(0, 8)}...
+                                                    </Link>
+                                                </div>
+                                                <div className={`order-status ${getStatusClass(order.status)}`}>
+                                                    {getStatusText(order.status)}
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="order-body">
+                                                <div className="order-info">
+                                                    <div className="info-item">
+                                                        <i className="fa fa-user"></i>
+                                                        <span>{order.id_note?.fullname || 'N/A'}</span>
+                                                    </div>
+                                                    <div className="info-item">
+                                                        <i className="fa fa-phone"></i>
+                                                        <span>{order.id_note?.phone || 'N/A'}</span>
+                                                    </div>
+                                                    <div className="info-item">
+                                                        <i className="fa fa-map-marker"></i>
+                                                        <span>{order.address || 'N/A'}</span>
+                                                    </div>
+                                                    <div className="info-item">
+                                                        <i className="fa fa-calendar"></i>
+                                                        <span>{formatDate(order.create_time)}</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="order-details">
+                                                    <div className="detail-item">
+                                                        <span className="label">Tổng tiền:</span>
+                                                        <span className="value price">
+                                                            {new Intl.NumberFormat('vi-VN', {style: 'decimal', decimal: 'VND'}).format(order.total)} VNĐ
+                                                        </span>
+                                                    </div>
+                                                    <div className="detail-item">
+                                                        <span className="label">Phí vận chuyển:</span>
+                                                        <span className="value">
+                                                            {new Intl.NumberFormat('vi-VN', {style: 'decimal', decimal: 'VND'}).format(order.feeship || 0)} VNĐ
+                                                        </span>
+                                                    </div>
+                                                    <div className="detail-item">
+                                                        <span className="label">Thanh toán:</span>
+                                                        <span className={`value payment-status ${order.pay ? 'paid' : 'unpaid'}`}>
+                                                            {order.pay ? 'Đã thanh toán' : 'Chưa thanh toán'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="order-footer">
+                                                <Link to={`/history/${order._id}`} className="btn-view-detail">
+                                                    <i className="fa fa-eye"></i> Xem chi tiết
+                                                </Link>
+                                                
+                                                {(order.status === '1' || order.status === '2') && (
+                                                    <button 
+                                                        onClick={() => deleteOrder(order._id, order.pay)} 
+                                                        className="btn-cancel-order"
+                                                        disabled={order.pay}
+                                                    >
+                                                        <i className="fa fa-times"></i> Hủy đơn hàng
+                                                    </button>
+                                                )}
+                                                
+                                                {order.status === '0' && (
+                                                    <div className="canceled-notice">
+                                                        <i className="fa fa-ban"></i> Đã hủy
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
