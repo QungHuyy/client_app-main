@@ -238,7 +238,7 @@ function Header(props) {
       formData.append('image', file);
 
       try {
-        const response = await fetch('https://search-by-ai.onrender.com/search-by-image', {
+        const response = await fetch('https://search-by-ai-e2av.onrender.com/search-by-image', {
           method: 'POST',
           body: formData,
         });
@@ -539,7 +539,7 @@ function Header(props) {
                             </li>
                             <li className="nav-item dropdown">
                                 <a className="nav-link dropdown-toggle" href="#" id="menuDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style={{color: '#333', fontWeight: 'bold', padding: '12px 20px'}}>
-                                    Danh mục
+                                    Sản phẩm
                                 </a>
                                 <div className="dropdown-menu" aria-labelledby="menuDropdown">
                                     <Link className="dropdown-item" to="/shop/male">Nam</Link>
@@ -548,7 +548,7 @@ function Header(props) {
                                 </div>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to="/event" style={{color: '#333', fontWeight: 'bold', padding: '12px 20px'}}>Sự kiện</Link>
+                                <Link className="nav-link" to="/event" style={{color: '#333', fontWeight: 'bold', padding: '12px 20px'}}>Mã Giảm Giá</Link>
                             </li>
                             <li className="nav-item">
                                 <Link className="nav-link" to="/contact" style={{color: '#333', fontWeight: 'bold', padding: '12px 20px'}}>Liên hệ</Link>
