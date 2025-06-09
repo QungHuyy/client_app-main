@@ -8,6 +8,7 @@ function Profile(props) {
     const [activeTab, setActiveTab] = useState('edit_profile');
     const [user, setUser] = useState({});
     const [loading, setLoading] = useState(true);
+    const [updating, setUpdating] = useState(false);
     
     // Form fields
     const [fullname, setFullname] = useState('');
@@ -23,6 +24,9 @@ function Profile(props) {
     // Error states
     const [passwordError, setPasswordError] = useState('');
     const [formErrors, setFormErrors] = useState({});
+    
+    // Success message
+    const [successMessage, setSuccessMessage] = useState('');
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -58,6 +62,13 @@ function Profile(props) {
         fetchUserData();
     }, []);
 
+    // Clear messages when switching tabs
+    useEffect(() => {
+        setSuccessMessage('');
+        setPasswordError('');
+        setFormErrors({});
+    }, [activeTab]);
+
     const validateProfileForm = () => {
         const errors = {};
         
@@ -65,10 +76,10 @@ function Profile(props) {
             errors.fullname = 'Vui lòng nhập họ tên';
         }
         
-        if (!username.trim()) {
-            errors.username = 'Vui lòng nhập tên đăng nhập';
-        } else if (username.length < 4) {
-            errors.username = 'Tên đăng nhập phải có ít nhất 4 ký tự';
+        if (!email.trim()) {
+            errors.email = 'Vui lòng nhập email';
+        } else if (!/\S+@\S+\.\S+/.test(email)) {
+            errors.email = 'Email không hợp lệ';
         }
         
         setFormErrors(errors);
@@ -99,54 +110,121 @@ function Profile(props) {
             return false;
         }
         
+        // Kiểm tra mật khẩu hiện tại khác mật khẩu mới
+        if (currentPassword === newPassword) {
+            setPasswordError('Mật khẩu mới phải khác mật khẩu hiện tại');
+            return false;
+        }
+        
         return true;
     };
 
     const handleUpdateProfile = async () => {
+        // Clear previous messages
+        setSuccessMessage('');
+        setFormErrors({});
+        
         if (!validateProfileForm()) {
             return;
         }
+        
+        setUpdating(true);
         
         try {
             const data = {
                 _id: sessionStorage.getItem('id_user'),
                 fullname,
-                username,
+                email,
                 phone
             };
 
-            await User.Put_User(data);
-            alert('Cập nhật thông tin thành công!');
+            const response = await User.Put_User(data);
+            
+            // Backend trả về chuỗi văn bản thay vì JSON
+            console.log("Server response:", response);
+            
+            // Xử lý các trường hợp lỗi cụ thể mà backend trả về
+            if (response === "Email Da Ton Tai") {
+                setFormErrors({...formErrors, email: 'Email này đã được sử dụng bởi tài khoản khác'});
+                setUpdating(false);
+                return;
+            }
+            
+            if (response === "Phone Da Ton Tai") {
+                setFormErrors({...formErrors, phone: 'Số điện thoại này đã được sử dụng bởi tài khoản khác'});
+                setUpdating(false);
+                return;
+            }
+            
+            if (response === "Khong Co Thay Doi" || response === "Thanh Cong") {
+                // Cập nhật thành công hoặc không có thay đổi
+                setSuccessMessage('Cập nhật thông tin thành công!');
+                
+                // Cập nhật thông tin user trong state
+                setUser({...user, fullname, email, phone});
+                
+                // Scroll to top to show success message
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                // Các lỗi khác
+                alert('Cập nhật thất bại: ' + response);
+            }
         } catch (error) {
             console.error('Cập nhật thất bại:', error);
             alert('Cập nhật thất bại. Vui lòng thử lại sau.');
+        } finally {
+            setUpdating(false);
         }
     };
-
+    
     const handleChangePassword = async () => {
+        // Clear previous messages
+        setSuccessMessage('');
+        setPasswordError('');
+        
         if (!validatePasswordForm()) {
             return;
         }
         
+        setUpdating(true);
+        
         try {
-            // Here you would usually check if current password matches before allowing change
-            // For simplicity, we'll just update the password
+            // API endpoint /api/User/change-password yêu cầu userId, oldPassword, newPassword
             const data = {
-                _id: sessionStorage.getItem('id_user'),
-                password: newPassword
+                userId: sessionStorage.getItem('id_user'),
+                oldPassword: currentPassword,
+                newPassword: newPassword
             };
 
-            await User.Put_User(data);
+            // Sử dụng API method thay vì fetch trực tiếp
+            const response = await User.Change_Password(data);
             
-            // Reset password fields
-            setCurrentPassword('');
-            setNewPassword('');
-            setConfirmPassword('');
+            console.log("Change password response:", response);
             
-            alert('Đổi mật khẩu thành công!');
+            if (response.success) {
+                // Reset password fields
+                setCurrentPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
+                
+                setSuccessMessage('Đổi mật khẩu thành công!');
+                
+                // Scroll to top to show success message
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                setPasswordError(response.message || 'Đổi mật khẩu thất bại');
+            }
         } catch (error) {
             console.error('Đổi mật khẩu thất bại:', error);
-            alert('Đổi mật khẩu thất bại. Vui lòng thử lại sau.');
+            
+            // Xử lý phản hồi lỗi từ server
+            if (error.response && error.response.data) {
+                setPasswordError(error.response.data.message || 'Mật khẩu hiện tại không chính xác');
+            } else {
+                setPasswordError('Đổi mật khẩu thất bại. Vui lòng thử lại sau.');
+            }
+        } finally {
+            setUpdating(false);
         }
     };
 
@@ -156,6 +234,13 @@ function Profile(props) {
                 <h1>Thông tin tài khoản</h1>
                 <p>Quản lý thông tin để bảo mật tài khoản</p>
             </div>
+
+            {successMessage && (
+                <div className="success-message">
+                    <i className="fa fa-check-circle"></i>
+                    <span>{successMessage}</span>
+                </div>
+            )}
 
             <div className="profile-content">
                 <div className="profile-tabs">
@@ -183,8 +268,19 @@ function Profile(props) {
                         </div>
                     ) : activeTab === 'edit_profile' ? (
                         <div className="profile-form">
+                            <div className="avatar-section">
+                                <div className="avatar-circle">
+                                    <span className="initials">
+                                        {fullname ? fullname.charAt(0).toUpperCase() : 'U'}
+                                    </span>
+                                </div>
+                                <h3 className="username-display">{fullname || 'Người dùng'}</h3>
+                            </div>
+
                             <div className="form-group">
-                                <label>Họ và tên</label>
+                                <label>
+                                    <i className="fa fa-user-circle"></i> Họ và tên
+                                </label>
                                 <input 
                                     type="text" 
                                     value={fullname}
@@ -196,44 +292,61 @@ function Profile(props) {
                             </div>
                             
                             <div className="form-group">
-                                <label>Tên đăng nhập</label>
+                                <label>
+                                    <i className="fa fa-id-card"></i> Tên đăng nhập
+                                </label>
                                 <input 
                                     type="text" 
                                     value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                    placeholder="Nhập tên đăng nhập"
-                                    className={formErrors.username ? 'error' : ''}
-                                />
-                                {formErrors.username && <div className="error-message">{formErrors.username}</div>}
-                            </div>
-                            
-                            <div className="form-group">
-                                <label>Email</label>
-                                <input 
-                                    type="email" 
-                                    value={email}
                                     disabled
                                     className="disabled"
                                 />
-                                <small>Email không thể thay đổi</small>
+                                <small>Tên đăng nhập không thể thay đổi</small>
                             </div>
                             
                             <div className="form-group">
-                                <label>Số điện thoại</label>
+                                <label>
+                                    <i className="fa fa-envelope"></i> Email
+                                </label>
+                                <input 
+                                    type="email" 
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="Nhập email"
+                                    className={formErrors.email ? 'error' : ''}
+                                />
+                                {formErrors.email && <div className="error-message">{formErrors.email}</div>}
+                            </div>
+                            
+                            <div className="form-group">
+                                <label>
+                                    <i className="fa fa-phone"></i> Số điện thoại
+                                </label>
                                 <input 
                                     type="tel" 
                                     value={phone}
                                     onChange={(e) => setPhone(e.target.value)}
                                     placeholder="Nhập số điện thoại"
+                                    className={formErrors.phone ? 'error' : ''}
                                 />
+                                {formErrors.phone && <div className="error-message">{formErrors.phone}</div>}
                             </div>
                             
                             <div className="form-actions">
                                 <button 
-                                    className="btn-update" 
+                                    className={`btn-update ${updating ? 'loading' : ''}`}
                                     onClick={handleUpdateProfile}
+                                    disabled={updating}
                                 >
-                                    Cập nhật thông tin
+                                    {updating ? (
+                                        <>
+                                            <div className="btn-spinner"></div> Đang cập nhật...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <i className="fa fa-save"></i> Cập nhật thông tin
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </div>
@@ -246,8 +359,18 @@ function Profile(props) {
                                 </div>
                             )}
                             
+                            <div className="avatar-section">
+                                <div className="avatar-circle">
+                                    <i className="fa fa-lock" style={{ fontSize: '48px', color: 'white' }}></i>
+                                </div>
+                                <h3 className="username-display">Bảo mật tài khoản</h3>
+                                <p className="account-info">Đổi mật khẩu thường xuyên để bảo vệ tài khoản</p>
+                            </div>
+                            
                             <div className="form-group">
-                                <label>Mật khẩu hiện tại</label>
+                                <label>
+                                    <i className="fa fa-key"></i> Mật khẩu hiện tại
+                                </label>
                                 <input 
                                     type="password" 
                                     value={currentPassword}
@@ -257,7 +380,9 @@ function Profile(props) {
                             </div>
                             
                             <div className="form-group">
-                                <label>Mật khẩu mới</label>
+                                <label>
+                                    <i className="fa fa-lock"></i> Mật khẩu mới
+                                </label>
                                 <input 
                                     type="password" 
                                     value={newPassword}
@@ -268,7 +393,9 @@ function Profile(props) {
                             </div>
                             
                             <div className="form-group">
-                                <label>Xác nhận mật khẩu</label>
+                                <label>
+                                    <i className="fa fa-check-circle"></i> Xác nhận mật khẩu
+                                </label>
                                 <input 
                                     type="password" 
                                     value={confirmPassword}
@@ -279,10 +406,19 @@ function Profile(props) {
                             
                             <div className="form-actions">
                                 <button 
-                                    className="btn-update" 
+                                    className={`btn-update ${updating ? 'loading' : ''}`}
                                     onClick={handleChangePassword}
+                                    disabled={updating}
                                 >
-                                    Đổi mật khẩu
+                                    {updating ? (
+                                        <>
+                                            <div className="btn-spinner"></div> Đang cập nhật...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <i className="fa fa-refresh"></i> Đổi mật khẩu
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </div>

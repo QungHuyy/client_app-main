@@ -187,8 +187,8 @@ function Favorite() {
 
     // Hiển thị trạng thái loading
     if (loading) {
-        return (
-            <div>
+    return (
+        <div>
                 <div className="wishlist-area pt-60 pb-60">
                     <div className="container">
                         <div className="row">
@@ -312,7 +312,7 @@ function Favorite() {
                                                             <i className="fa fa-eye mr-1"></i> Xem chi tiết
                                                         </Link>
                                                     </td>
-                                                </tr>
+                                            </tr>
                                             ))}
                                         </tbody>
                                     </table>
