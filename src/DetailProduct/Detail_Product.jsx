@@ -12,6 +12,7 @@ import CommentAPI from '../API/CommentAPI';
 import { Modal } from 'react-bootstrap';
 import SimilarProducts from './SimilarProducts';
 import './zoom.css'; // Thêm CSS cho hiệu ứng zoom
+import FavoriteAPI from '../API/FavoriteAPI';
 
 function Detail_Product(props) {
     const { id } = useParams();
@@ -30,6 +31,10 @@ function Detail_Product(props) {
     const [inventoryM, setInventoryM] = useState('0');
     const [inventoryL, setInventoryL] = useState('0');
     const [isFavorite, setIsFavorite] = useState(false);
+    const [favoriteLoading, setFavoriteLoading] = useState(false);
+    
+    // Lấy ID người dùng từ Redux store hoặc sessionStorage
+    const id_user = useSelector(state => state.Session.idUser) || sessionStorage.getItem('id_user');
     
     // Thêm state cho hiệu ứng zoom
     const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
@@ -301,6 +306,82 @@ function Detail_Product(props) {
         }
     };
 
+    // Xử lý khi click vào nút yêu thích
+    const handleToggleFavorite = async (e) => {
+        e.preventDefault();
+        
+        if (!id_user) {
+            set_error_message('Vui lòng đăng nhập để thêm sản phẩm vào yêu thích!');
+            set_show_error(true);
+            
+            setTimeout(() => {
+                set_show_error(false);
+            }, 3000);
+            
+            // Thêm chuyển hướng đến trang đăng nhập sau 1.5s
+            setTimeout(() => {
+                history.push('/signin');
+            }, 1500);
+            
+            return;
+        }
+        
+        try {
+            setFavoriteLoading(true);
+            
+            const result = await FavoriteAPI.toggleFavorite(id_user, id);
+            
+            if (result.success) {
+                setIsFavorite(result.isFavorite);
+                
+                // Hiển thị thông báo
+                if (result.isFavorite) {
+                    set_show_success(true);
+                    setTimeout(() => {
+                        set_show_success(false);
+                    }, 3000);
+                } else {
+                    set_error_message('Đã xóa sản phẩm khỏi danh sách yêu thích');
+                    set_show_error(true);
+                    setTimeout(() => {
+                        set_show_error(false);
+                    }, 3000);
+                }
+            } else {
+                set_error_message(result.message || 'Có lỗi xảy ra');
+                set_show_error(true);
+                setTimeout(() => {
+                    set_show_error(false);
+                }, 3000);
+            }
+        } catch (error) {
+            console.error('Error toggling favorite:', error);
+            set_error_message('Không thể thay đổi trạng thái yêu thích');
+            set_show_error(true);
+            setTimeout(() => {
+                set_show_error(false);
+            }, 3000);
+        } finally {
+            setFavoriteLoading(false);
+        }
+    };
+
+    // Kiểm tra trạng thái yêu thích khi component mount
+    useEffect(() => {
+        const checkFavoriteStatus = async () => {
+            if (!id_user) return;
+            
+            try {
+                const response = await FavoriteAPI.checkFavorite(id_user, id);
+                setIsFavorite(response.isFavorite);
+            } catch (error) {
+                console.error('Error checking favorite status:', error);
+            }
+        };
+        
+        checkFavoriteStatus();
+    }, [id_user, id]);
+
     useEffect(() => {
         // Cuộn trang lên đầu khi component được tải
         window.scrollTo(0, 0);
@@ -498,44 +579,65 @@ function Detail_Product(props) {
                                     <h2 style={{
                                         fontSize: '24px',
                                         fontWeight: 'bold',
-                                        marginBottom: '15px',
+                                        marginBottom: '10px',
+                                        lineHeight: '1.3',
                                         color: '#333'
-                                    }}>{product.name_product}</h2>
+                                    }}>
+                                        {product.name_product}
+                                    </h2>
                                     
-                                    {/* Hiển thị đánh giá sản phẩm */}
                                     <div style={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        marginBottom: '15px',
-                                        justifyContent: 'space-between'
+                                        marginBottom: '10px'
                                     }}>
                                         <div style={{
                                             display: 'flex',
                                             alignItems: 'center'
                                         }}>
-                                            <div style={{ display: 'flex', marginRight: '10px' }}>
-                                                {renderStarRating(averageRating)}
-                                            </div>
-                                            <span style={{ color: '#666', fontSize: '14px' }}>
+                                            {renderStarRating(averageRating)}
+                                            <span style={{
+                                                marginLeft: '5px',
+                                                fontSize: '14px',
+                                                color: '#666'
+                                            }}>
                                                 ({list_comment.length} đánh giá)
                                             </span>
                                         </div>
-                                        
-                                        {sessionStorage.getItem('id_user') && canReview && (
-                                            <button 
-                                                style={{
-                                                    backgroundColor: 'transparent',
-                                                    border: '1px solid #fed700',
-                                                    color: '#333',
-                                                    padding: '5px 10px',
-                                                    borderRadius: '4px',
-                                                    cursor: 'pointer'
-                                                }}
-                                                onClick={() => set_modal(true)}
-                                            >
-                                                Viết đánh giá
-                                            </button>
-                                        )}
+                                        <span style={{
+                                            margin: '0 10px',
+                                            color: '#999'
+                                        }}>|</span>
+                                        <div style={{
+                                            fontSize: '14px',
+                                            color: '#666'
+                                        }}>
+                                            Đã bán: {product.sold || 0}
+                                        </div>
+                                        <span style={{
+                                            margin: '0 10px',
+                                            color: '#999'
+                                        }}>|</span>
+                                        <button 
+                                            onClick={handleToggleFavorite}
+                                            disabled={favoriteLoading}
+                                            style={{
+                                                border: 'none',
+                                                background: 'none',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                color: isFavorite ? '#fed700' : '#666',
+                                                fontSize: '14px',
+                                                padding: '0'
+                                            }}
+                                        >
+                                            <i className={`fa ${isFavorite ? 'fa-heart' : 'fa-heart-o'}`} style={{
+                                                marginRight: '5px',
+                                                fontSize: '16px'
+                                            }}></i>
+                                            {isFavorite ? 'Đã thêm vào yêu thích' : 'Thêm vào yêu thích'}
+                                        </button>
                                     </div>
                                     
                                     <div className="price-box pt-20" style={{
@@ -799,59 +901,98 @@ function Detail_Product(props) {
                                                             Thêm vào giỏ hàng
                                                         </button>
                                                         
-                                                        {/* Thêm nút Thêm vào yêu thích */}
                                                         <button 
-                                                            className="add-to-wishlist" 
-                                                            onClick={() => setIsFavorite(!isFavorite)}
+                                                            className="add-to-favorite-button" 
+                                                            type="button" 
+                                                            onClick={handleToggleFavorite}
+                                                            disabled={favoriteLoading}
                                                             style={{
-                                                                marginTop: '15px',
-                                                                width: '100%',
-                                                                padding: '10px 15px',
-                                                                border: '1px solid #333',
-                                                                borderRadius: '4px',
-                                                                backgroundColor: 'white',
-                                                                color: '#333',
-                                                                fontSize: '14px',
+                                                                backgroundColor: isFavorite ? '#fed700' : '#fff',
+                                                                border: '2px solid #fed700',
+                                                                color: isFavorite ? '#fff' : '#fed700',
                                                                 fontWeight: 'bold',
+                                                                fontSize: '16px',
+                                                                padding: '10px 30px',
+                                                                borderRadius: '8px',
                                                                 cursor: 'pointer',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'center',
-                                                                transition: 'all 0.3s'
+                                                                transition: 'all 0.3s',
+                                                                width: '100%',
+                                                                marginTop: '10px'
                                                             }}
                                                             onMouseOver={(e) => {
-                                                                e.currentTarget.style.backgroundColor = '#fed700';
-                                                                e.currentTarget.style.borderColor = '#fed700';
+                                                                if (!isFavorite) {
+                                                                    e.currentTarget.style.backgroundColor = '#fed700';
+                                                                    e.currentTarget.style.color = '#fff';
+                                                                }
                                                             }}
                                                             onMouseOut={(e) => {
-                                                                e.currentTarget.style.backgroundColor = 'white';
-                                                                e.currentTarget.style.borderColor = '#333';
+                                                                if (!isFavorite) {
+                                                                    e.currentTarget.style.backgroundColor = '#fff';
+                                                                    e.currentTarget.style.color = '#fed700';
+                                                                }
                                                             }}
                                                         >
-                                                            <i className={`fa ${isFavorite ? 'fa-heart' : 'fa-heart-o'}`} style={{ marginRight: '8px' }}></i>
-                                                            {isFavorite ? 'Đã thêm vào yêu thích' : 'Thêm vào yêu thích'}
+                                                            <i className={`fa ${isFavorite ? 'fa-heart' : 'fa-heart-o'}`} style={{ marginRight: '10px' }}></i>
+                                                            {isFavorite ? 'Đã yêu thích' : 'Thêm vào yêu thích'}
                                                         </button>
                                                     </div>
                                                 ) : (
-                                                    <button 
-                                                        className="out-of-stock-button" 
-                                                        type="button" 
-                                                        disabled
-                                                        style={{
-                                                            backgroundColor: '#f5f5f5',
-                                                            border: '1px solid #ddd',
-                                                            color: '#999',
-                                                            fontWeight: 'bold',
-                                                            fontSize: '16px',
-                                                            padding: '12px 30px',
-                                                            borderRadius: '8px',
-                                                            width: '100%',
-                                                            marginTop: '10px'
-                                                        }}
-                                                    >
-                                                        <i className="fa fa-ban" style={{ marginRight: '10px' }}></i>
-                                                        Hết hàng
-                                                    </button>
+                                                    <div>
+                                                        <button 
+                                                            className="out-of-stock-button" 
+                                                            type="button" 
+                                                            disabled
+                                                            style={{
+                                                                backgroundColor: '#f5f5f5',
+                                                                border: '1px solid #ddd',
+                                                                color: '#999',
+                                                                fontWeight: 'bold',
+                                                                fontSize: '16px',
+                                                                padding: '12px 30px',
+                                                                borderRadius: '8px',
+                                                                width: '100%',
+                                                                marginTop: '10px'
+                                                            }}
+                                                        >
+                                                            <i className="fa fa-ban" style={{ marginRight: '10px' }}></i>
+                                                            Hết hàng
+                                                        </button>
+                                                        
+                                                        <button 
+                                                            className="add-to-favorite-button" 
+                                                            type="button" 
+                                                            onClick={handleToggleFavorite}
+                                                            disabled={favoriteLoading}
+                                                            style={{
+                                                                backgroundColor: isFavorite ? '#fed700' : '#fff',
+                                                                border: '2px solid #fed700',
+                                                                color: isFavorite ? '#fff' : '#fed700',
+                                                                fontWeight: 'bold',
+                                                                fontSize: '16px',
+                                                                padding: '10px 30px',
+                                                                borderRadius: '8px',
+                                                                cursor: 'pointer',
+                                                                transition: 'all 0.3s',
+                                                                width: '100%',
+                                                                marginTop: '10px'
+                                                            }}
+                                                            onMouseOver={(e) => {
+                                                                if (!isFavorite) {
+                                                                    e.currentTarget.style.backgroundColor = '#fed700';
+                                                                    e.currentTarget.style.color = '#fff';
+                                                                }
+                                                            }}
+                                                            onMouseOut={(e) => {
+                                                                if (!isFavorite) {
+                                                                    e.currentTarget.style.backgroundColor = '#fff';
+                                                                    e.currentTarget.style.color = '#fed700';
+                                                                }
+                                                            }}
+                                                        >
+                                                            <i className={`fa ${isFavorite ? 'fa-heart' : 'fa-heart-o'}`} style={{ marginRight: '10px' }}></i>
+                                                            {isFavorite ? 'Đã yêu thích' : 'Thêm vào yêu thích'}
+                                                        </button>
+                                                    </div>
                                                 )}
                                             </div>
                                         </form>

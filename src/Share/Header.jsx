@@ -17,6 +17,7 @@ function Header(props) {
 
     // State count of cart
     const [count_cart, set_count_cart] = useState(0)
+    const [count_favorite, set_count_favorite] = useState(0)
     const [matchedProducts, setMatchedProducts] = React.useState([]);
     const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
@@ -68,6 +69,21 @@ function Header(props) {
 
     const [user, set_user] = useState({})
 
+    // Hàm cập nhật số lượng sản phẩm yêu thích
+    const updateFavoriteCount = (count) => {
+        set_count_favorite(count);
+    };
+
+    // Đăng ký hàm cập nhật vào window object để có thể gọi từ component khác
+    useEffect(() => {
+        window.updateFavoriteCount = updateFavoriteCount;
+        
+        // Cleanup khi component unmount
+        return () => {
+            delete window.updateFavoriteCount;
+        };
+    }, []);
+
     // Hàm này dùng để hiện thị
     useEffect(() => {
 
@@ -82,6 +98,16 @@ function Header(props) {
                 const response = await User.Get_User(sessionStorage.getItem('id_user'))
                 set_user(response)
 
+                // Lấy số lượng sản phẩm yêu thích
+                try {
+                    const favoriteResponse = await fetch(`http://localhost:8000/api/Favorite/${id_user}`);
+                    const favoriteData = await favoriteResponse.json();
+                    if (favoriteData.success && favoriteData.data) {
+                        set_count_favorite(favoriteData.data.length);
+                    }
+                } catch (error) {
+                    console.error('Error loading favorite count:', error);
+                }
             }
 
             fetchData()
@@ -91,7 +117,6 @@ function Header(props) {
         }
 
     }, [id_user])
-
 
     // Hàm này dùng để xử lý phần log out
     const handler_logout = () => {
@@ -113,7 +138,6 @@ function Header(props) {
         
         console.log("Đã đăng xuất và xóa giỏ hàng");
     }
-
 
     // Get trạng thái từ redux khi user chưa đăng nhập
     const count = useSelector(state => state.Count.isLoad)
@@ -158,7 +182,6 @@ function Header(props) {
 
     }
 
-
     // Hàm này dùng để Delete carts_mini
     const handler_delete_mini = async (id_cart) => {
         try {
@@ -170,7 +193,6 @@ function Header(props) {
         }
     }
 
-    
     const [male, set_male] = useState([])
     const [female, set_female] = useState([])
 
@@ -206,7 +228,6 @@ function Header(props) {
         fetchData()
 
     }, [])
-
 
     // state keyword search
     const [keyword_search, set_keyword_search] = useState('')
@@ -261,7 +282,6 @@ function Header(props) {
         alert('Tìm kiếm theo hình ảnh thất bại, vui lòng thử lại.');
       }
     };
-
 
     const search_header = useMemo(() => {
 
@@ -472,9 +492,22 @@ function Header(props) {
                         <div className="col-md-3 text-right">
                             <div className="d-flex justify-content-end align-items-center">
                                 {/* Wishlist icon */}
-                                <a href="/wishlist" className="mr-4" style={{color: '#333', fontSize: '22px'}}>
+                                <Link to="/favorite" className="mr-4 position-relative" style={{color: '#333', fontSize: '22px'}}>
                                     <i className="fa fa-heart-o"></i>
-                                </a>
+                                    {count_favorite > 0 && (
+                                        <span className="badge badge-danger rounded-circle" style={{
+                                            position: 'absolute', 
+                                            top: '-8px', 
+                                            right: '-8px', 
+                                            fontSize: '10px', 
+                                            padding: '3px 6px',
+                                            backgroundColor: '#e80f0f',
+                                            color: 'white'
+                                        }}>
+                                            {count_favorite}
+                                        </span>
+                                    )}
+                                </Link>
                                 
                                 {/* Cart icon - chỉ hiển thị số lượng */}
                                 <a href="/cart" className="position-relative mr-4" style={{color: '#333', fontSize: '22px'}}>

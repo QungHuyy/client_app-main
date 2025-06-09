@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom';
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { useSelector } from 'react-redux';
+import FavoriteAPI from '../../API/FavoriteAPI';
 
 Home_Product.propTypes = {
     gender: PropTypes.string,
@@ -28,6 +30,9 @@ Home_Product.defaultProps = {
 function Home_Product(props) {
 
     const { gender, category, GET_id_modal, products: initialProducts, slider, autoScroll } = props
+
+    // Lấy ID người dùng từ Redux store hoặc sessionStorage
+    const id_user = useSelector(state => state.Session.idUser) || sessionStorage.getItem('id_user');
 
     // Thiết lập tùy chỉnh cho slider
     const sliderSettings = {
@@ -116,6 +121,134 @@ function Home_Product(props) {
     const [loading, setLoading] = useState(true)
     const [productStats, setProductStats] = useState({})
     const [allProducts, setAllProducts] = useState([])
+    const [favoriteProducts, setFavoriteProducts] = useState({}) // Lưu trạng thái yêu thích của các sản phẩm
+    const [favoriteLoading, setFavoriteLoading] = useState(false) // Trạng thái loading chung
+    
+    // Thêm state cho thông báo
+    const [showNotification, setShowNotification] = useState(false);
+    const [notificationType, setNotificationType] = useState(''); // 'success' hoặc 'error'
+    const [notificationMessage, setNotificationMessage] = useState('');
+    const [notificationProduct, setNotificationProduct] = useState(null);
+
+    // Lấy danh sách sản phẩm yêu thích khi component mount
+    useEffect(() => {
+        const loadFavoriteStatus = async () => {
+            if (!id_user) return;
+            
+            try {
+                // Nếu có sản phẩm, kiểm tra trạng thái yêu thích cho từng sản phẩm
+                const productList = initialProducts || products;
+                if (!productList || productList.length === 0) return;
+                
+                const favoriteStatus = {};
+                
+                // Kiểm tra từng sản phẩm
+                for (const product of productList) {
+                    try {
+                        const response = await FavoriteAPI.checkFavorite(id_user, product._id);
+                        favoriteStatus[product._id] = response.isFavorite;
+                    } catch (error) {
+                        console.error(`Error checking favorite status for product ${product._id}:`, error);
+                        favoriteStatus[product._id] = false;
+                    }
+                }
+                
+                setFavoriteProducts(favoriteStatus);
+            } catch (error) {
+                console.error('Error loading favorite status:', error);
+            }
+        };
+        
+        loadFavoriteStatus();
+    }, [id_user, initialProducts, products]);
+
+    // Xử lý khi click vào nút yêu thích
+    const handleToggleFavorite = async (e, productId, productName) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (!id_user) {
+            // Hiển thị thông báo yêu cầu đăng nhập
+            setNotificationType('error');
+            setNotificationMessage('Vui lòng đăng nhập để thêm sản phẩm vào yêu thích');
+            setShowNotification(true);
+            
+            // Tự động ẩn thông báo sau 3 giây
+            setTimeout(() => {
+                setShowNotification(false);
+            }, 3000);
+            return;
+        }
+        
+        try {
+            setFavoriteLoading(true);
+            
+            const result = await FavoriteAPI.toggleFavorite(id_user, productId);
+            
+            if (result.success) {
+                // Cập nhật trạng thái yêu thích của sản phẩm
+                setFavoriteProducts(prev => ({
+                    ...prev,
+                    [productId]: result.isFavorite
+                }));
+                
+                // Tìm thông tin sản phẩm để hiển thị trong thông báo
+                const product = products.find(p => p._id === productId) || 
+                               (initialProducts && initialProducts.find(p => p._id === productId));
+                
+                setNotificationProduct(product);
+                
+                // Hiển thị thông báo
+                if (result.isFavorite) {
+                    setNotificationType('success');
+                    setNotificationMessage('Đã thêm vào danh sách yêu thích');
+                } else {
+                    setNotificationType('info');
+                    setNotificationMessage('Đã xóa khỏi danh sách yêu thích');
+                }
+                
+                setShowNotification(true);
+                
+                // Tự động ẩn thông báo sau 3 giây
+                setTimeout(() => {
+                    setShowNotification(false);
+                }, 3000);
+                
+                // Cập nhật số lượng yêu thích trong Header
+                try {
+                    const favoriteResponse = await fetch(`http://localhost:8000/api/Favorite/${id_user}`);
+                    const favoriteData = await favoriteResponse.json();
+                    if (favoriteData.success && favoriteData.data) {
+                        // Cập nhật count_favorite trong Header
+                        if (window.updateFavoriteCount) {
+                            window.updateFavoriteCount(favoriteData.data.length);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error updating favorite count:', error);
+                }
+            } else {
+                setNotificationType('error');
+                setNotificationMessage(result.message || 'Có lỗi xảy ra');
+                setShowNotification(true);
+                
+                setTimeout(() => {
+                    setShowNotification(false);
+                }, 3000);
+            }
+        } catch (error) {
+            console.error('Error toggling favorite:', error);
+            setNotificationType('error');
+            setNotificationMessage('Không thể thay đổi trạng thái yêu thích');
+            setShowNotification(true);
+            
+            setTimeout(() => {
+                setShowNotification(false);
+            }, 3000);
+        } finally {
+            setFavoriteLoading(false);
+        }
+    };
 
     // Hàm này dùng gọi API trả lại dữ liệu product category
     useEffect(() => {
@@ -305,13 +438,16 @@ function Home_Product(props) {
 
     // Tạo component sản phẩm theo thiết kế mẫu Sản Phẩm Giảm Giá
     const renderProductItem = (value) => {
-                                    // Kiểm tra xem value có tồn tại không
-                                    if (!value) return null;
+        // Kiểm tra xem value có tồn tại không
+        if (!value) return null;
         
         // Lấy thông tin thống kê sản phẩm
         const stats = productStats[value._id] || { averageRating: 0, totalSold: 0 };
+        
+        // Lấy trạng thái yêu thích của sản phẩm
+        const isFavorite = favoriteProducts[value._id] || false;
 
-                                    return (
+        return (
             <div key={value._id} style={{padding: '10px'}}>
                 <div className="product-item" style={{
                     border: '1px solid #e5e5e5',
@@ -449,9 +585,19 @@ function Home_Product(props) {
                         </button>
                         <button 
                             className="btn btn-sm btn-light"
-                            style={{width: '30px', height: '30px', padding: '0', borderRadius: '50%'}}
+                            onClick={(e) => handleToggleFavorite(e, value._id, value.name_product)}
+                            disabled={favoriteLoading}
+                            style={{
+                                width: '30px', 
+                                height: '30px', 
+                                padding: '0', 
+                                borderRadius: '50%',
+                                backgroundColor: isFavorite ? '#fed700' : '#fff'
+                            }}
                         >
-                            <i className="fa fa-heart-o"></i>
+                            <i className={`fa ${isFavorite ? 'fa-heart' : 'fa-heart-o'}`} style={{
+                                color: isFavorite ? '#333' : '#666'
+                            }}></i>
                         </button>
                                             </div>
                                         </div>
@@ -494,8 +640,52 @@ function Home_Product(props) {
             <div className="product-slider-container" style={{position: 'relative', margin: '0 -10px'}}>
                 <Slider {...finalSettings} className="product-slider">
                     {products && products.map(value => renderProductItem(value))}
-                        </Slider>
+                </Slider>
+                
+                {/* Thông báo thêm vào yêu thích thành công */}
+                {showNotification && (
+                    <div className={`notification-modal ${notificationType === 'success' ? 'success-modal' : notificationType === 'info' ? 'info-modal' : 'error-modal'}`} style={{
+                        position: 'fixed',
+                        bottom: '20px',
+                        right: '20px',
+                        backgroundColor: notificationType === 'success' ? '#28a745' : notificationType === 'info' ? '#17a2b8' : '#dc3545',
+                        color: 'white',
+                        padding: '15px',
+                        borderRadius: '4px',
+                        boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                        zIndex: 1000,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        width: '250px',
+                        fontSize: '14px'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <i className={`fa ${notificationType === 'success' ? 'fa-check-circle' : notificationType === 'info' ? 'fa-info-circle' : 'fa-exclamation-circle'}`} style={{ marginRight: '10px', fontSize: '18px' }}></i>
+                            <div>
+                                <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>{notificationMessage}</div>
+                                {notificationProduct && (
+                                    <div style={{ fontSize: '12px' }}>{notificationProduct.name_product}</div>
+                                )}
+                            </div>
+                        </div>
+                        <button 
+                            className="btn btn-sm" 
+                            style={{ 
+                                fontSize: '10px', 
+                                padding: '3px 8px',
+                                marginLeft: '8px',
+                                backgroundColor: 'rgba(255,255,255,0.2)',
+                                borderColor: 'transparent',
+                                color: 'white'
+                            }}
+                            onClick={() => setShowNotification(false)}
+                        >
+                            Đóng
+                        </button>
                     </div>
+                )}
+            </div>
         );
     }
 
@@ -507,7 +697,51 @@ function Home_Product(props) {
                     {renderProductItem(value)}
                 </div>
             ))}
-            </div>
+            
+            {/* Thông báo thêm vào yêu thích thành công */}
+            {showNotification && (
+                <div className={`notification-modal ${notificationType === 'success' ? 'success-modal' : notificationType === 'info' ? 'info-modal' : 'error-modal'}`} style={{
+                    position: 'fixed',
+                    bottom: '20px',
+                    right: '20px',
+                    backgroundColor: notificationType === 'success' ? '#28a745' : notificationType === 'info' ? '#17a2b8' : '#dc3545',
+                    color: 'white',
+                    padding: '15px',
+                    borderRadius: '4px',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                    zIndex: 1000,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    width: '250px',
+                    fontSize: '14px'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <i className={`fa ${notificationType === 'success' ? 'fa-check-circle' : notificationType === 'info' ? 'fa-info-circle' : 'fa-exclamation-circle'}`} style={{ marginRight: '10px', fontSize: '18px' }}></i>
+                        <div>
+                            <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>{notificationMessage}</div>
+                            {notificationProduct && (
+                                <div style={{ fontSize: '12px' }}>{notificationProduct.name_product}</div>
+                            )}
+                        </div>
+                    </div>
+                    <button 
+                        className="btn btn-sm" 
+                        style={{ 
+                            fontSize: '10px', 
+                            padding: '3px 8px',
+                            marginLeft: '8px',
+                            backgroundColor: 'rgba(255,255,255,0.2)',
+                            borderColor: 'transparent',
+                            color: 'white'
+                        }}
+                        onClick={() => setShowNotification(false)}
+                    >
+                        Đóng
+                    </button>
+                </div>
+            )}
+        </div>
     );
 }
 
