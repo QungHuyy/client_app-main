@@ -1,0 +1,110 @@
+/* CSS cho danh mục sản phẩm */
+
+.category-card {
+  display: block;
+  height: 200px;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+  position: relative;
+  margin-bottom: 15px;
+  text-decoration: none;
+}
+
+.category-item {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.category-image {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  transition: all 0.5s ease;
+}
+
+.category-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.category-name {
+  color: white;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+
+.category-btn {
+  padding: 8px 20px;
+  background-color: #fed700;
+  color: #000;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 14px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+}
+
+/* Hiệu ứng hover */
+.category-hover:hover .category-image {
+  transform: scale(1.1);
+}
+
+.category-hover:hover .category-overlay {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.category-hover:hover .category-name {
+  transform: translateY(-10px);
+  color: #fed700;
+}
+
+.category-hover:hover .category-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.category-btn:hover {
+  background-color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .category-name {
+    font-size: 20px;
+  }
+  
+  .category-btn {
+    padding: 6px 16px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  .category-card {
+    height: 180px;
+  }
+  
+  .category-name {
+    font-size: 18px;
+  }
+} 

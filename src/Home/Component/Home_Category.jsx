@@ -6,6 +6,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import SaleAPI from '../../API/SaleAPI';
 import Product from '../../API/Product';
+import '../css/category.css'; // Thêm file CSS cho category
 
 Home_Category.propTypes = {
     GET_id_modal: PropTypes.func
@@ -117,74 +118,43 @@ function Home_Category(props) {
                             <div className="category-grid">
                                 <div className="row">
                                     <div className="col-md-4 mb-4">
-                                        <Link to="/shop/male" className="category-card" style={{height:200, display:"block"}}>
-                                            <div className="category-item" style={{
-                                                backgroundImage:'url("https://theme.hstatic.net/200000690725/1001078549/14/home_category_1_img.jpg?v=743")' ,
-                                                backgroundSize  : 'cover',
-                                                backgroundPosition: 'center',
-                                                borderRadius: '8px',
-                                                padding: '60px 20px',
-                                                textAlign: 'center',
-                                                color: 'white',
-                                                boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-                                                transition: 'all 0.3s ease',
-                                                position:"relative",
-                                                width:'100%',
-                                                height:"100%",
-                                                overflow:"hidden"
-
-                                            }}>
-                                                <h3 style={{position:"absolute", top:0, left:0 ,zIndex:5, backgroundColor:"rgba(1, 1, 1, 0.4)", width:"100%", height:"100%",display:"flex", justifyContent:'center', alignItems:'center'}} className="helvetica-font">Nam</h3>
+                                        <Link to="/shop/male" className="category-card">
+                                            <div className="category-item category-hover">
+                                                <div className="category-image" style={{
+                                                    backgroundImage:'url("https://theme.hstatic.net/200000690725/1001078549/14/home_category_1_img.jpg?v=743")' 
+                                                }}></div>
+                                                <div className="category-overlay">
+                                                    <h3 className="helvetica-font category-name">Nam</h3>
+                                                    <div className="category-btn">Xem ngay</div>
+                                                </div>
                                             </div>
                                         </Link>
                                     </div>
                                     <div className="col-md-4 mb-4">
-                                        <Link to="/shop/female" className="category-card" style={{height:200, display:"block"}}>
-                                                                                <div className="category-item" style={{
-                                                backgroundImage:'url("https://res.cloudinary.com/dwmsfixy5/image/upload/v1748127256/unnamed_pj2cqe.png")' ,
-                                                backgroundSize  : 'cover',
-                                                backgroundPosition: 'center',
-                                                borderRadius: '8px',
-                                                padding: '60px 20px',
-                                                textAlign: 'center',
-                                                color: 'white',
-                                                boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-                                                transition: 'all 0.3s ease',
-                                                position:"relative",
-                                                width:'100%',
-                                                height:"100%",
-                                                overflow:"hidden"
-
-                                            }}>
-                                                <h3 style={{position:"absolute", top:0, left:0 ,zIndex:5, backgroundColor:"rgba(1, 1, 1, 0.4)", width:"100%", height:"100%",display:"flex", justifyContent:'center', alignItems:'center'}} className="helvetica-font">Nữ</h3>
+                                        <Link to="/shop/female" className="category-card">
+                                            <div className="category-item category-hover">
+                                                <div className="category-image" style={{
+                                                    backgroundImage:'url("https://res.cloudinary.com/dwmsfixy5/image/upload/v1748127256/unnamed_pj2cqe.png")' 
+                                                }}></div>
+                                                <div className="category-overlay">
+                                                    <h3 className="helvetica-font category-name">Nữ</h3>
+                                                    <div className="category-btn">Xem ngay</div>
+                                                </div>
                                             </div>
                                         </Link>
-                                        
                                     </div>
                                     <div className="col-md-4 mb-4">
-                                        <Link to="/shop/unisex" className="category-card" style={{height:200, display:"block"}}>
-                                        <div className="category-item" style={{
-                                                backgroundImage:'url("https://res.cloudinary.com/dwmsfixy5/image/upload/v1748126928/Gemini_Generated_Image_ai6lq2ai6lq2ai6l_1_vp9k9b.png")' ,
-                                                backgroundSize  : 'cover',
-                                                backgroundPosition: 'center',
-                                                borderRadius: '8px',
-                                                padding: '60px 20px',
-                                                textAlign: 'center',
-                                                color: 'white',
-                                                boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-                                                transition: 'all 0.3s ease',
-                                                position:"relative",
-                                                width:'100%',
-                                                height:"100%",
-                                                overflow:"hidden"
-
-                                            }}>
-                                                <h3 style={{position:"absolute", top:0, left:0 ,zIndex:5, backgroundColor:"rgba(1, 1, 1, 0.4)", width:"100%", height:"100%",display:"flex", justifyContent:'center', alignItems:'center'}} className="helvetica-font">Unisex</h3>
+                                        <Link to="/shop/unisex" className="category-card">
+                                            <div className="category-item category-hover">
+                                                <div className="category-image" style={{
+                                                    backgroundImage:'url("https://res.cloudinary.com/dwmsfixy5/image/upload/v1748126928/Gemini_Generated_Image_ai6lq2ai6lq2ai6l_1_vp9k9b.png")' 
+                                                }}></div>
+                                                <div className="category-overlay">
+                                                    <h3 className="helvetica-font category-name">Unisex</h3>
+                                                    <div className="category-btn">Xem ngay</div>
+                                                </div>
                                             </div>
-                                            </Link>
-
-
-                                        
+                                        </Link>
                                     </div>
                                 </div>
                             </div>
