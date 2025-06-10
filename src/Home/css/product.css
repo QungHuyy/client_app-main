@@ -1,0 +1,448 @@
+/* CSS cho sản phẩm */
+
+/* Container cho grid và slider */
+.product-grid {
+  margin: 0 -10px;
+}
+
+.product-slider-container {
+  position: relative;
+  margin: 0 -10px;
+  padding: 10px 0;
+}
+
+/* Card sản phẩm */
+.product-card-wrapper {
+  padding: 10px;
+  height: 100%;
+}
+
+.product-card {
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #fff;
+  position: relative;
+  height: 420px !important; /* Đảm bảo tất cả card đều có chiều cao cố định */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s;
+  font-family: 'Montserrat', sans-serif;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Đảm bảo độ cao đồng nhất cho tất cả các slider sản phẩm */
+.product-slider .product-card-wrapper {
+  height: auto;
+}
+
+.product-slider .product-card {
+  height: 420px !important;
+}
+
+/* Đảm bảo kích thước đồng nhất cho các slider theo giới tính */
+[gender="male"] .product-card,
+[gender="female"] .product-card,
+[gender="unisex"] .product-card {
+  height: 420px !important;
+}
+
+.product-card:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+}
+
+/* Container hình ảnh sản phẩm */
+.product-image-container {
+  position: relative;
+  height: 220px !important; /* Chiều cao cố định cho hình ảnh */
+  width: 100%;
+  overflow: hidden;
+  background-color: #f9f9f9;
+}
+
+/* Đảm bảo kích thước hình ảnh đồng nhất trong tất cả slider */
+.product-slider .product-image-container {
+  height: 220px !important;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.05);
+}
+
+/* Badges */
+.product-badges {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 1;
+}
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.badge-sale {
+  background-color: #ff3535;
+  color: white;
+}
+
+.badge-new {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.badge-bestseller {
+  background-color: #FFC107;
+  color: #333;
+}
+
+/* Quick action buttons */
+.product-actions {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+}
+
+.product-card:hover .product-actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.action-btn {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background-color: white;
+  border: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background-color: #fed700;
+  transform: scale(1.1);
+}
+
+.action-btn i {
+  font-size: 14px;
+  color: #333;
+}
+
+.favorite-btn.active {
+  background-color: #fed700;
+}
+
+.favorite-btn.active i {
+  color: #e74c3c;
+}
+
+/* Thông tin sản phẩm */
+.product-info {
+  padding: 15px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Xếp hạng */
+.product-rating {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.product-rating i {
+  margin-right: 2px;
+}
+
+.sold-count {
+  color: #777;
+  font-size: 11px;
+}
+
+/* Tiêu đề sản phẩm */
+.product-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 8px;
+  height: 40px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.product-title a {
+  color: #333;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.product-title a:hover {
+  color: #fed700;
+}
+
+/* Mô tả sản phẩm */
+.product-description {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 10px;
+  height: 50px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+/* Giá sản phẩm */
+.product-price {
+  margin-top: auto;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.price-original {
+  color: #999;
+  font-size: 13px;
+  text-decoration: line-through;
+  font-style: italic;
+  order: 2;
+}
+
+.price-sale {
+  color: #e80f0f;
+  font-weight: 700;
+  font-size: 16px;
+  order: 1;
+}
+
+.price-regular {
+  color: #e80f0f;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+/* Nút mua trên mobile */
+.mobile-buy-btn {
+  display: none;
+  width: 100%;
+  padding: 8px;
+  background-color: #fed700;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s;
+  margin-top: 10px;
+}
+
+.mobile-buy-btn:hover {
+  background-color: #e6c400;
+}
+
+.mobile-buy-btn i {
+  margin-right: 5px;
+}
+
+/* Fix cho slider */
+.slick-slide {
+  height: auto !important; /* Đảm bảo tất cả slide có chiều cao tự động */
+}
+
+.slick-track {
+  display: flex !important;
+  align-items: stretch !important; /* Đảm bảo các slide căn đều */
+}
+
+.slick-slide > div {
+  height: 100% !important; /* Đảm bảo div bên trong slide lấp đầy chiều cao */
+}
+
+/* Đảm bảo các sản phẩm trong slider có cùng kích thước */
+.product-slider .slick-slide {
+  padding: 0 5px;
+  height: auto !important;
+}
+
+/* Đảm bảo tất cả các slider đều có cùng kích thước */
+.product-slider-wrapper {
+  height: auto !important;
+}
+
+/* Thông báo */
+.notification-modal {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 15px;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  max-width: 300px;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notification-modal.success {
+  background-color: #28a745;
+  color: white;
+}
+
+.notification-modal.error {
+  background-color: #dc3545;
+  color: white;
+}
+
+.notification-content {
+  display: flex;
+  align-items: flex-start;
+}
+
+.notification-icon {
+  margin-right: 10px;
+  font-size: 18px;
+}
+
+.notification-message {
+  font-weight: 600;
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.notification-product {
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+.notification-product img {
+  width: 30px;
+  height: 30px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-right: 8px;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .product-card,
+  .product-slider .product-card,
+  [gender="male"] .product-card,
+  [gender="female"] .product-card,
+  [gender="unisex"] .product-card {
+    height: 400px !important;
+  }
+  
+  .product-image-container,
+  .product-slider .product-image-container {
+    height: 200px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .product-card,
+  .product-slider .product-card,
+  [gender="male"] .product-card,
+  [gender="female"] .product-card,
+  [gender="unisex"] .product-card {
+    height: 380px !important;
+  }
+  
+  .product-image-container,
+  .product-slider .product-image-container {
+    height: 180px !important;
+  }
+  
+  .product-description {
+    height: 40px;
+    -webkit-line-clamp: 2;
+  }
+  
+  .mobile-buy-btn {
+    display: block;
+  }
+  
+  .product-actions {
+    display: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .product-card-wrapper {
+    padding: 5px;
+  }
+  
+  .product-card,
+  .product-slider .product-card,
+  [gender="male"] .product-card,
+  [gender="female"] .product-card,
+  [gender="unisex"] .product-card {
+    height: 350px !important;
+  }
+  
+  .product-image-container,
+  .product-slider .product-image-container {
+    height: 160px !important;
+  }
+  
+  .product-info {
+    padding: 10px;
+  }
+  
+  .product-title {
+    font-size: 13px;
+    height: 36px;
+  }
+  
+  .price-sale,
+  .price-regular {
+    font-size: 14px;
+  }
+} 

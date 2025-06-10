@@ -466,7 +466,7 @@ function Home(props) {
                 {/* Các section phân loại theo giới tính */}
                 <section className="product-area pt-60 pb-45" style={{fontFamily: 'Montserrat, sans-serif'}}>
                     <div className="row">
-                        <div className="col-12">
+                        <div className="col-lg-12">
                             <div className="li-section-title d-flex justify-content-between align-items-center">
                                 <h2>
                                     <span className="helvetica-font">Sản Phẩm Unisex</span>
@@ -510,7 +510,7 @@ function Home(props) {
 
                 <section className="product-area pt-60 pb-45" style={{fontFamily: 'Montserrat, sans-serif'}}>
                     <div className="row">
-                        <div className="col-12">
+                        <div className="col-lg-12">
                             <div className="li-section-title d-flex justify-content-between align-items-center">
                                 <h2>
                                     <span className="helvetica-font">Thời Trang Nam</span>
@@ -554,7 +554,7 @@ function Home(props) {
 
                 <section className="product-area pt-60 pb-45" style={{fontFamily: 'Montserrat, sans-serif'}}>
                     <div className="row">
-                        <div className="col-12">
+                        <div className="col-lg-12">
                             <div className="li-section-title d-flex justify-content-between align-items-center">
                                 <h2>
                                     <span className="helvetica-font">Thời Trang Nữ</span>

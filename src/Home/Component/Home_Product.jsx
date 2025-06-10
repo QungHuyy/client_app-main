@@ -6,8 +6,12 @@ import { Link } from 'react-router-dom';
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import FavoriteAPI from '../../API/FavoriteAPI';
+import '../css/product.css'; // Thêm file CSS cho sản phẩm
+import CartsLocal from '../../Share/CartsLocal';
+import { changeCount } from '../../Redux/Action/ActionCount';
+import Swal from 'sweetalert2';
 
 Home_Product.propTypes = {
     gender: PropTypes.string,
@@ -30,9 +34,11 @@ Home_Product.defaultProps = {
 function Home_Product(props) {
 
     const { gender, category, GET_id_modal, products: initialProducts, slider, autoScroll } = props
+    const dispatch = useDispatch();
 
     // Lấy ID người dùng từ Redux store hoặc sessionStorage
     const id_user = useSelector(state => state.Session.idUser) || sessionStorage.getItem('id_user');
+    const count_change = useSelector(state => state.Count.isLoad);
 
     // Thiết lập tùy chỉnh cho slider
     const sliderSettings = {
@@ -123,6 +129,7 @@ function Home_Product(props) {
     const [allProducts, setAllProducts] = useState([])
     const [favoriteProducts, setFavoriteProducts] = useState({}) // Lưu trạng thái yêu thích của các sản phẩm
     const [favoriteLoading, setFavoriteLoading] = useState(false) // Trạng thái loading chung
+    const [addingToCart, setAddingToCart] = useState({}) // Trạng thái thêm vào giỏ hàng
     
     // Thêm state cho thông báo
     const [showNotification, setShowNotification] = useState(false);
@@ -424,8 +431,8 @@ function Home_Product(props) {
     // Hàm tối ưu URL Cloudinary
     const optimizeCloudinaryImage = (url, width = 300) => {
         if (url && url.includes('cloudinary.com')) {
-            // Thêm transformation vào URL Cloudinary
-            return url.replace('/upload/', `/upload/w_${width},h_${width},c_fill/`);
+            // Thêm transformation vào URL Cloudinary với kích thước cố định và crop để đảm bảo đồng đều
+            return url.replace('/upload/', `/upload/w_${width},h_${width},c_fill,q_auto/`);
         }
         return url;
     };
@@ -436,7 +443,77 @@ function Home_Product(props) {
         return text.length > 100 ? text.substring(0, 100) + '...' : text;
     };
 
-    // Tạo component sản phẩm theo thiết kế mẫu Sản Phẩm Giảm Giá
+    // Kiểm tra xem sản phẩm có phải là mới không (< 14 ngày)
+    const isNewProduct = (createdAt) => {
+        if (!createdAt) return false;
+        const productDate = new Date(createdAt);
+        const now = new Date();
+        const diffTime = Math.abs(now - productDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays <= 14; // Nếu sản phẩm được tạo trong vòng 14 ngày thì là sản phẩm mới
+    };
+
+    // Hàm thêm sản phẩm vào giỏ hàng trực tiếp từ trang chủ
+    const handleAddToCart = async (e, product) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (!id_user) {
+            Swal.fire({
+                title: 'Thông báo',
+                text: 'Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!',
+                icon: 'warning',
+                confirmButtonText: 'Đóng',
+                confirmButtonColor: '#3085d6',
+            });
+            return;
+        }
+        
+        // Đánh dấu đang thêm vào giỏ hàng
+        setAddingToCart(prev => ({...prev, [product._id]: true}));
+        
+        try {
+            const data = {
+                id_cart: Math.random().toString(),
+                id_product: product._id,
+                name_product: product.name_product,
+                price_product: product.price_product,
+                count: 1,
+                image: product.image,
+                size: 'S', // Size mặc định
+            };
+            
+            // Thêm vào giỏ hàng
+            await CartsLocal.addProduct(data);
+            
+            // Cập nhật UI
+            const action_count_change = changeCount(count_change);
+            dispatch(action_count_change);
+            
+            // Hiển thị thông báo thành công
+            Swal.fire({
+                title: 'Thành công!',
+                text: `Đã thêm ${product.name_product} vào giỏ hàng`,
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false,
+            });
+        } catch (error) {
+            console.error("Error adding product to cart:", error);
+            
+            Swal.fire({
+                title: 'Lỗi',
+                text: 'Không thể thêm sản phẩm vào giỏ hàng.',
+                icon: 'error',
+                confirmButtonText: 'Đóng',
+            });
+        } finally {
+            // Bỏ đánh dấu đang thêm vào giỏ hàng
+            setAddingToCart(prev => ({...prev, [product._id]: false}));
+        }
+    };
+
+    // Tạo component sản phẩm theo thiết kế cải tiến
     const renderProductItem = (value) => {
         // Kiểm tra xem value có tồn tại không
         if (!value) return null;
@@ -446,163 +523,117 @@ function Home_Product(props) {
         
         // Lấy trạng thái yêu thích của sản phẩm
         const isFavorite = favoriteProducts[value._id] || false;
+        
+        // Kiểm tra sản phẩm mới
+        const isNew = isNewProduct(value.createdAt);
+        
+        // Kiểm tra bestseller (bán nhiều hơn 10 sản phẩm)
+        const isBestSeller = stats.totalSold >= 10;
 
         return (
-            <div key={value._id} style={{padding: '10px'}}>
-                <div className="product-item" style={{
-                    border: '1px solid #e5e5e5',
-                    borderRadius: '0',
-                    overflow: 'hidden',
-                    backgroundColor: '#fff',
-                    position: 'relative',
-                    marginBottom: '20px',
-                    height: '410px', // Tăng chiều cao để chứa thêm thông tin số lượng đã bán
-                    width: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    transition: 'all 0.3s',
-                    fontFamily: 'Montserrat, sans-serif',
-                }}
-                onMouseOver={(e) => {
-                    e.currentTarget.style.boxShadow = '0 5px 15px rgba(0,0,0,0.1)';
-                    const actions = e.currentTarget.querySelector('.product-actions');
-                    if (actions) actions.style.display = 'flex';
-                }}
-                onMouseOut={(e) => {
-                    e.currentTarget.style.boxShadow = 'none';
-                    const actions = e.currentTarget.querySelector('.product-actions');
-                    if (actions) actions.style.display = 'none';
-                }}>
-                    <div style={{position: 'relative', height: '200px', width: '200px', overflow: 'hidden', margin: '0 auto'}}>
-                                                <Link to={`/detail/${value._id}`}>
-                            <img src={optimizeCloudinaryImage(value.image)} alt={value.name_product} 
-                                style={{
-                                    width: "200px", 
-                                    height: "200px", 
-                                    objectFit: "cover",
-                                    display: "block"
-                                }} 
+            <div className="product-card-wrapper" key={value._id}>
+                <div className="product-card">
+                    <div className="product-image-container">
+                        <Link to={`/detail/${value._id}`} className="product-link">
+                            <img 
+                                src={optimizeCloudinaryImage(value.image)} 
+                                alt={value.name_product} 
+                                className="product-image"
                             />
                         </Link>
-                        {value.promotion > 0 && (
-                            <span style={{
-                                position: 'absolute',
-                                top: '10px',
-                                right: '10px',
-                                backgroundColor: '#ff3535',
-                                color: 'white',
-                                padding: '2px 8px',
-                                borderRadius: '20px',
-                                fontSize: '12px',
-                                fontWeight: 'bold'
-                            }}>-{value.promotion}%</span>
-                        )}
+                        
+                        {/* Badges */}
+                        <div className="product-badges">
+                            {value.promotion > 0 && (
+                                <span className="badge badge-sale">-{value.promotion}%</span>
+                            )}
+                            {isNew && (
+                                <span className="badge badge-new">New</span>
+                            )}
+                            {isBestSeller && (
+                                <span className="badge badge-bestseller">Best Seller</span>
+                            )}
+                        </div>
+                        
+                        {/* Quick action buttons */}
+                        <div className="product-actions">
+                            <button 
+                                className="action-btn view-btn"
+                                data-toggle="modal"
+                                data-target={`#${value._id}`}
+                                onClick={() => GET_id_modal(`${value._id}`)}
+                                title="Xem nhanh"
+                            >
+                                <i className="fa fa-eye"></i>
+                            </button>
+                            <button 
+                                className={`action-btn favorite-btn ${isFavorite ? 'active' : ''}`}
+                                onClick={(e) => handleToggleFavorite(e, value._id, value.name_product)}
+                                disabled={favoriteLoading}
+                                title={isFavorite ? "Đã yêu thích" : "Thêm vào yêu thích"}
+                            >
+                                <i className={`fa ${isFavorite ? 'fa-heart' : 'fa-heart-o'}`}></i>
+                            </button>
+                            <button 
+                                className="action-btn cart-btn"
+                                onClick={(e) => handleAddToCart(e, value)}
+                                disabled={addingToCart[value._id]}
+                                title="Thêm vào giỏ hàng"
+                            >
+                                <i className="fa fa-shopping-cart"></i>
+                            </button>
+                        </div>
                     </div>
                     
-                    <div style={{padding: '10px', flexGrow: 1, display: 'flex', flexDirection: 'column'}}>
-                        <div className="rating" style={{marginBottom: '8px'}}>
-                            <span style={{color: '#ddd', fontSize: '12px'}}>
-                                {renderStars(stats.averageRating)}
-                            </span>
+                    <div className="product-info">
+                        {/* Xếp hạng sao */}
+                        <div className="product-rating">
+                            {renderStars(stats.averageRating)}
+                            <span className="sold-count">Đã bán: {stats.totalSold || 0}</span>
                         </div>
                         
-                        <h3 style={{
-                            fontSize: '15px',
-                            fontWeight: '500',
-                            lineHeight: '1.4',
-                            marginBottom: '8px',
-                            height: '42px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            display: '-webkit-box',
-                            WebkitLineClamp: '2',
-                            WebkitBoxOrient: 'vertical',
-                            fontFamily: 'Montserrat, sans-serif',
-                        }}>
-                            <Link to={`/detail/${value._id}`} style={{color: '#333', textDecoration: 'none'}}>
+                        {/* Tên sản phẩm */}
+                        <h3 className="product-title">
+                            <Link to={`/detail/${value._id}`}>
                                 {value.name_product}
-                                                </Link>
+                            </Link>
                         </h3>
                         
-                        <div style={{
-                            fontSize: '13px',
-                            color: '#666',
-                            marginBottom: '10px',
-                            height: '60px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            display: '-webkit-box',
-                            WebkitLineClamp: '3',
-                            WebkitBoxOrient: 'vertical',
-                            fontFamily: 'Montserrat, sans-serif',
-                        }}>
+                        {/* Mô tả ngắn */}
+                        <p className="product-description">
                             {truncateDescription(value.describe)}
+                        </p>
+                        
+                        {/* Giá */}
+                        <div className="product-price">
+                            {value.promotion > 0 ? (
+                                <>
+                                    <span className="price-sale">
+                                        {new Intl.NumberFormat('vi-VN', {style: 'decimal', decimal: 'VND'}).format(value.price_product - (value.price_product * value.promotion / 100))} VNĐ
+                                    </span>
+                                    <span className="price-original">
+                                        {new Intl.NumberFormat('vi-VN', {style: 'decimal', decimal: 'VND'}).format(value.price_product)} VNĐ
+                                    </span>
+                                </>
+                            ) : (
+                                <span className="price-regular">
+                                    {new Intl.NumberFormat('vi-VN', {style: 'decimal', decimal: 'VND'}).format(value.price_product)} VNĐ
+                                </span>
+                            )}
                         </div>
                         
-                        <div style={{marginTop: 'auto'}}>
-                            {value.promotion > 0 ? (
-                                <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                                    <div style={{color: '#e80f0f', fontWeight: 'bold', fontSize: '15px', fontFamily: 'Montserrat, sans-serif'}}>
-                                        {new Intl.NumberFormat('vi-VN', {style: 'decimal', decimal: 'VND'}).format(value.price_product - (value.price_product * value.promotion / 100)) + ' VND'}
-                                    </div>
-                                    <del style={{color: '#999', fontSize: '13px', fontStyle: 'italic', fontFamily: 'Montserrat, sans-serif'}}>
-                                        {new Intl.NumberFormat('vi-VN', {style: 'decimal', decimal: 'VND'}).format(value.price_product) + ' VND'}
-                                    </del>
-                                            </div>
-                            ) : (
-                                <div style={{color: '#e80f0f', fontWeight: 'bold', fontSize: '15px', fontFamily: 'Montserrat, sans-serif'}}>
-                                    {new Intl.NumberFormat('vi-VN', {style: 'decimal', decimal: 'VND'}).format(value.price_product) + ' VND'}
-                                                        </div>
-                            )}
-                                                    </div>
-                        
-                        <div style={{
-                            fontSize: '12px', 
-                            color: '#666', 
-                            marginTop: '5px',
-                            fontFamily: 'Montserrat, sans-serif'
-                        }}>
-                            Đã bán: {stats.totalSold || 0}
-                                                    </div>
-                                                </div>
-                    
-                    <div className="product-actions" style={{
-                        position: 'absolute',
-                        bottom: '10px',
-                        right: '10px',
-                        display: 'none',
-                        transition: 'all 0.3s',
-                        gap: '5px'
-                    }}>
+                        {/* Nút mua ngay trên mobile */}
                         <button 
-                            className="btn btn-sm btn-light mr-2"
-                                                            data-toggle="modal"
-                                                            data-target={`#${value._id}`}
-                            onClick={() => GET_id_modal(`${value._id}`)}
-                            style={{width: '30px', height: '30px', padding: '0', borderRadius: '50%'}}
+                            className="mobile-buy-btn"
+                            onClick={(e) => handleAddToCart(e, value)}
+                            disabled={addingToCart[value._id]}
                         >
-                            <i className="fa fa-eye"></i>
+                            <i className="fa fa-shopping-cart"></i> Thêm vào giỏ
                         </button>
-                        <button 
-                            className="btn btn-sm btn-light"
-                            onClick={(e) => handleToggleFavorite(e, value._id, value.name_product)}
-                            disabled={favoriteLoading}
-                            style={{
-                                width: '30px', 
-                                height: '30px', 
-                                padding: '0', 
-                                borderRadius: '50%',
-                                backgroundColor: isFavorite ? '#fed700' : '#fff'
-                            }}
-                        >
-                            <i className={`fa ${isFavorite ? 'fa-heart' : 'fa-heart-o'}`} style={{
-                                color: isFavorite ? '#333' : '#666'
-                            }}></i>
-                        </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    );
+                    </div>
+                </div>
+            </div>
+        );
     };
 
     if (loading) {
@@ -625,120 +656,64 @@ function Home_Product(props) {
 
     // Tất cả các gender-specific sections và Sản Phẩm Mới Nhất đều sử dụng slider
     if (slider) {
-        // Sử dụng cài đặt slider phù hợp dựa vào có phải là slider cho gender hay không
-        const currentSliderSettings = gender ? horizontalSliderSettings : sliderSettings;
-        
-        // Đảm bảo autoplay được bật, bất kể prop autoScroll là gì
+        // Sử dụng cùng một thiết lập slider cho tất cả các section, bất kể có phải là gender hay không
+        // Bỏ điều kiện phân biệt giữa gender và non-gender sliders
         const finalSettings = {
-            ...currentSliderSettings,
+            ...sliderSettings, // Luôn sử dụng cài đặt của sliderSettings cho tất cả các section
             autoplay: true,
             swipeToSlide: true,
             touchMove: true
         };
         
         return (
-            <div className="product-slider-container" style={{position: 'relative', margin: '0 -10px'}}>
+            <div className="product-slider-container">
                 <Slider {...finalSettings} className="product-slider">
                     {products && products.map(value => renderProductItem(value))}
                 </Slider>
                 
                 {/* Thông báo thêm vào yêu thích thành công */}
                 {showNotification && (
-                    <div className={`notification-modal ${notificationType === 'success' ? 'success-modal' : notificationType === 'info' ? 'info-modal' : 'error-modal'}`} style={{
-                        position: 'fixed',
-                        bottom: '20px',
-                        right: '20px',
-                        backgroundColor: notificationType === 'success' ? '#28a745' : notificationType === 'info' ? '#17a2b8' : '#dc3545',
-                        color: 'white',
-                        padding: '15px',
-                        borderRadius: '4px',
-                        boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-                        zIndex: 1000,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        width: '250px',
-                        fontSize: '14px'
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <i className={`fa ${notificationType === 'success' ? 'fa-check-circle' : notificationType === 'info' ? 'fa-info-circle' : 'fa-exclamation-circle'}`} style={{ marginRight: '10px', fontSize: '18px' }}></i>
-                            <div>
-                                <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>{notificationMessage}</div>
-                                {notificationProduct && (
-                                    <div style={{ fontSize: '12px' }}>{notificationProduct.name_product}</div>
-                                )}
-                            </div>
+                    <div className={`notification-modal ${notificationType}`}>
+                        <div className="notification-content">
+                            <i className={`notification-icon fa ${notificationType === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`}></i>
+                            <p className="notification-message">{notificationMessage}</p>
+                            {notificationProduct && notificationType === 'success' && (
+                                <div className="notification-product">
+                                    <img src={optimizeCloudinaryImage(notificationProduct.image, 50)} alt={notificationProduct.name_product} />
+                                    <span>{notificationProduct.name_product}</span>
+                                </div>
+                            )}
                         </div>
-                        <button 
-                            className="btn btn-sm" 
-                            style={{ 
-                                fontSize: '10px', 
-                                padding: '3px 8px',
-                                marginLeft: '8px',
-                                backgroundColor: 'rgba(255,255,255,0.2)',
-                                borderColor: 'transparent',
-                                color: 'white'
-                            }}
-                            onClick={() => setShowNotification(false)}
-                        >
-                            Đóng
-                        </button>
                     </div>
                 )}
             </div>
         );
     }
 
-    // Grid layout (fallback)
+    // Normal grid for non-slider sections
     return (
-        <div className="row">
-            {products && products.map(value => (
-                <div className="col-lg-3 col-md-4 col-sm-6 mb-4" key={value._id} style={{padding: '0 15px'}}>
-                    {renderProductItem(value)}
-                </div>
-            ))}
+        <div className="product-grid">
+            <div className="row">
+                {products && products.map(value => (
+                    <div key={value._id} className="col-lg-3 col-md-4 col-sm-6 col-12">
+                        {renderProductItem(value)}
+                    </div>
+                ))}
+            </div>
             
             {/* Thông báo thêm vào yêu thích thành công */}
             {showNotification && (
-                <div className={`notification-modal ${notificationType === 'success' ? 'success-modal' : notificationType === 'info' ? 'info-modal' : 'error-modal'}`} style={{
-                    position: 'fixed',
-                    bottom: '20px',
-                    right: '20px',
-                    backgroundColor: notificationType === 'success' ? '#28a745' : notificationType === 'info' ? '#17a2b8' : '#dc3545',
-                    color: 'white',
-                    padding: '15px',
-                    borderRadius: '4px',
-                    boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-                    zIndex: 1000,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    width: '250px',
-                    fontSize: '14px'
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <i className={`fa ${notificationType === 'success' ? 'fa-check-circle' : notificationType === 'info' ? 'fa-info-circle' : 'fa-exclamation-circle'}`} style={{ marginRight: '10px', fontSize: '18px' }}></i>
-                        <div>
-                            <div style={{ fontWeight: 'bold', marginBottom: '2px' }}>{notificationMessage}</div>
-                            {notificationProduct && (
-                                <div style={{ fontSize: '12px' }}>{notificationProduct.name_product}</div>
-                            )}
-                        </div>
+                <div className={`notification-modal ${notificationType}`}>
+                    <div className="notification-content">
+                        <i className={`notification-icon fa ${notificationType === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`}></i>
+                        <p className="notification-message">{notificationMessage}</p>
+                        {notificationProduct && notificationType === 'success' && (
+                            <div className="notification-product">
+                                <img src={optimizeCloudinaryImage(notificationProduct.image, 50)} alt={notificationProduct.name_product} />
+                                <span>{notificationProduct.name_product}</span>
+                            </div>
+                        )}
                     </div>
-                    <button 
-                        className="btn btn-sm" 
-                        style={{ 
-                            fontSize: '10px', 
-                            padding: '3px 8px',
-                            marginLeft: '8px',
-                            backgroundColor: 'rgba(255,255,255,0.2)',
-                            borderColor: 'transparent',
-                            color: 'white'
-                        }}
-                        onClick={() => setShowNotification(false)}
-                    >
-                        Đóng
-                    </button>
                 </div>
             )}
         </div>
