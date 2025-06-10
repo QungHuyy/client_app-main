@@ -23,7 +23,7 @@
   overflow: hidden;
   background-color: #fff;
   position: relative;
-  height: 420px !important; /* Đảm bảo tất cả card đều có chiều cao cố định */
+  height: 450px !important; /* Tăng chiều cao để phù hợp với container hình ảnh mới */
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -38,14 +38,14 @@
 }
 
 .product-slider .product-card {
-  height: 420px !important;
+  height: 450px !important;
 }
 
 /* Đảm bảo kích thước đồng nhất cho các slider theo giới tính */
 [gender="male"] .product-card,
 [gender="female"] .product-card,
 [gender="unisex"] .product-card {
-  height: 420px !important;
+  height: 450px !important;
 }
 
 .product-card:hover {
@@ -56,7 +56,8 @@
 /* Container hình ảnh sản phẩm */
 .product-image-container {
   position: relative;
-  height: 220px !important; /* Chiều cao cố định cho hình ảnh */
+  height: 0 !important;
+  padding-bottom: 100% !important; /* Tạo tỷ lệ 1:1 */
   width: 100%;
   overflow: hidden;
   background-color: #f9f9f9;
@@ -64,15 +65,24 @@
 
 /* Đảm bảo kích thước hình ảnh đồng nhất trong tất cả slider */
 .product-slider .product-image-container {
-  height: 220px !important;
+  height: 0 !important;
+  padding-bottom: 100% !important;
 }
 
 .product-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
   display: block;
+  margin: 0 auto;
   transition: transform 0.5s ease;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 .product-card:hover .product-image {
@@ -151,6 +161,18 @@
 .action-btn:hover {
   background-color: #fed700;
   transform: scale(1.1);
+}
+
+.action-btn.cart-btn {
+  background-color: #fed700;
+}
+
+.action-btn.cart-btn i {
+  color: white;
+}
+
+.action-btn.cart-btn:hover {
+  background-color: #e6c400;
 }
 
 .action-btn i {
@@ -270,6 +292,7 @@
   font-size: 14px;
   transition: all 0.2s;
   margin-top: 10px;
+  color: white;
 }
 
 .mobile-buy-btn:hover {
@@ -377,7 +400,7 @@
   [gender="male"] .product-card,
   [gender="female"] .product-card,
   [gender="unisex"] .product-card {
-    height: 400px !important;
+    height: 430px !important;
   }
   
   .product-image-container,
@@ -392,7 +415,7 @@
   [gender="male"] .product-card,
   [gender="female"] .product-card,
   [gender="unisex"] .product-card {
-    height: 380px !important;
+    height: 410px !important;
   }
   
   .product-image-container,
@@ -424,7 +447,7 @@
   [gender="male"] .product-card,
   [gender="female"] .product-card,
   [gender="unisex"] .product-card {
-    height: 350px !important;
+    height: 380px !important;
   }
   
   .product-image-container,
@@ -444,5 +467,198 @@
   .price-sale,
   .price-regular {
     font-size: 14px;
+  }
+}
+
+/* CSS cho modal xem nhanh sản phẩm */
+.modal-wrapper .modal-dialog {
+  max-width: 900px;
+}
+
+.lg-image-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%;
+  overflow: hidden;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.product-preview-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 20px;
+}
+
+.product-discount-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #ff3535;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  z-index: 1;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.product-name {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.product-details-rating {
+  display: flex;
+  align-items: center;
+}
+
+.rating-stars {
+  margin-right: 10px;
+}
+
+.rating-stars i {
+  color: #ffc107;
+  margin-right: 2px;
+}
+
+.rating-count {
+  color: #777;
+  font-size: 14px;
+}
+
+.price-box {
+  margin: 15px 0;
+}
+
+.product-description {
+  color: #666;
+  line-height: 1.6;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  padding: 15px 0;
+}
+
+.product-description h5 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.size-selection h5 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.size-options {
+  margin-top: 10px;
+}
+
+.size-option-container {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.size-option {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.size-option:hover {
+  border-color: #fed700;
+  background-color: #fffdf0;
+}
+
+.size-option.active {
+  border-color: #fed700;
+  background-color: #fed700;
+  color: #333;
+  font-weight: bold;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.add-to-cart-btn {
+  flex: 1;
+  background-color: #fed700;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: white;
+}
+
+.add-to-cart-btn:hover {
+  background-color: #e6c400;
+}
+
+.add-to-cart-btn:disabled {
+  background-color: #f0f0f0;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.view-details-btn {
+  flex: 1;
+  border: 1px solid #ddd;
+  background-color: white;
+  padding: 12px 20px;
+  border-radius: 4px;
+  font-weight: 600;
+  text-align: center;
+  color: #333;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.view-details-btn:hover {
+  background-color: #f9f9f9;
+  border-color: #ccc;
+  color: #333;
+}
+
+.size-alert {
+  font-size: 14px;
+}
+
+/* Mobile styles for quick view modal */
+@media (max-width: 768px) {
+  .modal-wrapper .modal-dialog {
+    max-width: 95%;
+    margin: 10px auto;
+  }
+  
+  .product-name {
+    font-size: 20px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .view-details-btn {
+    margin-top: 10px;
   }
 } 

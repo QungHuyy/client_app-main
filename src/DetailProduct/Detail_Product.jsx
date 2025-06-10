@@ -1556,7 +1556,7 @@ function Detail_Product(props) {
                     <div style={{ display: 'flex', alignItems: 'center' }}>
                         <i className="fa fa-exclamation-circle" style={{ marginRight: '10px', fontSize: '20px' }}></i>
                         <div>
-                            <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>Không thể thêm vào giỏ hàng</div>
+                            <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>Đã xóa sản phẩm khỏi danh sách yêu thích</div>
                             <div style={{ fontSize: '14px' }}>{error_message}</div>
                         </div>
                     </div>

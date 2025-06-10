@@ -12,6 +12,7 @@ import { addSearch } from '../Redux/Action/ActionSearch';
 import CartsLocal from './CartsLocal';
 import ResultDialog from './ResultDialog';
 import { subscribeToCartUpdates } from './CartEventManager';
+import { setImageSearchResults } from '../Redux/Action/ActionSearchResults';
 
 function Header(props) {
 
@@ -25,6 +26,9 @@ function Header(props) {
     
     const [carts_mini, set_carts_mini] = useState([])
     const history = useHistory()
+
+    // Đầu file, thêm state để lưu ảnh tải lên
+    const [uploadedImage, setUploadedImage] = useState(null);
 
     // Hàm này để khởi tạo localStorage dùng để lưu trữ giỏ hàng
     // Và nó sẽ chạy lần đầu
@@ -255,6 +259,13 @@ function Header(props) {
         return;
       }
 
+      // Lưu URL của ảnh đã tải lên
+      const imageUrl = URL.createObjectURL(file);
+      setUploadedImage(imageUrl);
+      
+      // Lưu vào sessionStorage để có thể sử dụng ở trang SearchByAI
+      sessionStorage.setItem('uploadedImageUrl', imageUrl);
+
       const formData = new FormData();
       formData.append('image', file);
 
@@ -273,8 +284,17 @@ function Header(props) {
         const results = await response.json();
         console.log('Received results:', results);
 
-        // Lưu data matched_products vào state
-        setMatchedProducts(results.matched_products || []);
+        // Lọc kết quả với độ tương đồng >= 30%
+        const filteredResults = results.matched_products 
+          ? results.matched_products.filter(product => product.similarity_score >= 0.3)
+          : [];
+
+        // Lưu data matched_products đã lọc vào state
+        setMatchedProducts(filteredResults);
+        
+        // Lưu kết quả vào Redux store
+        dispatch(setImageSearchResults(filteredResults));
+        
         setIsDialogOpen(true); // Mở dialog hiển thị kết quả
 
       } catch (error) {
@@ -605,7 +625,8 @@ function Header(props) {
                 <ResultDialog 
                     open={isDialogOpen} 
                     onClose={() => setIsDialogOpen(false)} 
-                    products={matchedProducts} 
+                    products={matchedProducts}
+                    uploadedImage={uploadedImage}
                 />
             )}
         </div>

@@ -431,8 +431,8 @@ function Home_Product(props) {
     // Hàm tối ưu URL Cloudinary
     const optimizeCloudinaryImage = (url, width = 300) => {
         if (url && url.includes('cloudinary.com')) {
-            // Thêm transformation vào URL Cloudinary với kích thước cố định và crop để đảm bảo đồng đều
-            return url.replace('/upload/', `/upload/w_${width},h_${width},c_fill,q_auto/`);
+            // Thêm transformation vào URL Cloudinary với kích thước cố định nhưng không crop, giữ nguyên tỷ lệ
+            return url.replace('/upload/', `/upload/w_${width},h_${width},c_scale,q_auto/`);
         }
         return url;
     };
@@ -473,6 +473,98 @@ function Home_Product(props) {
         setAddingToCart(prev => ({...prev, [product._id]: true}));
         
         try {
+            // Hiển thị dialog chọn size trước khi thêm vào giỏ hàng
+            let selectedSize = null;
+            
+            // Lấy thông tin inventory của sản phẩm
+            const productDetail = await Product.Get_Detail_Product(product._id);
+            const inventory = productDetail.inventory || { S: 10, M: 10, L: 10 }; // Fallback nếu không có inventory
+            
+            // Tạo danh sách size có sẵn
+            const availableSizes = Object.entries(inventory)
+                .filter(([_, quantity]) => quantity > 0)
+                .map(([size]) => size);
+            
+            if (availableSizes.length === 0) {
+                Swal.fire({
+                    title: 'Thông báo',
+                    text: 'Sản phẩm này hiện đã hết hàng!',
+                    icon: 'info',
+                    confirmButtonText: 'Đóng',
+                });
+                setAddingToCart(prev => ({...prev, [product._id]: false}));
+                return;
+            }
+            
+            // Hiển thị dialog chọn size
+            const { value: size } = await Swal.fire({
+                title: 'Chọn kích thước',
+                html: `
+                    <div class="size-selection-dialog">
+                        <p>Vui lòng chọn kích thước phù hợp:</p>
+                        <div class="size-options">
+                            ${availableSizes.map(size => 
+                                `<div class="size-option" data-size="${size}" onclick="document.querySelectorAll('.size-option').forEach(el => el.classList.remove('active')); this.classList.add('active');">${size}</div>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    <style>
+                        .size-selection-dialog {
+                            margin: 20px 0;
+                            text-align: center;
+                        }
+                        .size-options {
+                            display: flex;
+                            justify-content: center;
+                            gap: 10px;
+                            margin-top: 15px;
+                        }
+                        .size-option {
+                            width: 40px;
+                            height: 40px;
+                            border: 1px solid #ddd;
+                            border-radius: 4px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            cursor: pointer;
+                            transition: all 0.2s;
+                            font-weight: 500;
+                        }
+                        .size-option:hover {
+                            border-color: #fed700;
+                            background-color: #fffdf0;
+                        }
+                        .size-option.active {
+                            border-color: #fed700;
+                            background-color: #fed700;
+                            color: #333;
+                            font-weight: bold;
+                        }
+                    </style>
+                `,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Thêm vào giỏ hàng',
+                cancelButtonText: 'Hủy',
+                preConfirm: () => {
+                    const activeSize = document.querySelector('.size-option.active');
+                    if (!activeSize) {
+                        Swal.showValidationMessage('Vui lòng chọn kích thước');
+                        return false;
+                    }
+                    return activeSize.dataset.size;
+                }
+            });
+            
+            // Nếu người dùng không chọn size hoặc hủy
+            if (!size) {
+                setAddingToCart(prev => ({...prev, [product._id]: false}));
+                return;
+            }
+            
+            selectedSize = size;
+            
             const data = {
                 id_cart: Math.random().toString(),
                 id_product: product._id,
@@ -480,7 +572,7 @@ function Home_Product(props) {
                 price_product: product.price_product,
                 count: 1,
                 image: product.image,
-                size: 'S', // Size mặc định
+                size: selectedSize,
             };
             
             // Thêm vào giỏ hàng
@@ -493,7 +585,7 @@ function Home_Product(props) {
             // Hiển thị thông báo thành công
             Swal.fire({
                 title: 'Thành công!',
-                text: `Đã thêm ${product.name_product} vào giỏ hàng`,
+                text: `Đã thêm ${product.name_product} (Size ${selectedSize}) vào giỏ hàng`,
                 icon: 'success',
                 timer: 1500,
                 showConfirmButton: false,
@@ -579,6 +671,7 @@ function Home_Product(props) {
                                 onClick={(e) => handleAddToCart(e, value)}
                                 disabled={addingToCart[value._id]}
                                 title="Thêm vào giỏ hàng"
+
                             >
                                 <i className="fa fa-shopping-cart"></i>
                             </button>

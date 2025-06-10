@@ -35,6 +35,7 @@ function Home(props) {
     const [active_user, set_active_user] = useState(false)
     const history = useHistory()
     const [products, set_products] = useState([])
+    const [selectedSize, setSelectedSize] = useState(null)
 
     // Tải tất cả sản phẩm để tìm kiếm
     useEffect(() => {
@@ -173,7 +174,7 @@ function Home(props) {
             price_product: product_detail.price_product,
             count: 1,
             image: product_detail.image,
-            size: 'S',
+            size: selectedSize,
         }
 
         try {
@@ -599,57 +600,106 @@ function Home(props) {
 
             {/* Modal chi tiết sản phẩm */}
             <div className="modal fade modal-wrapper" id={id_modal} style={{fontFamily: 'Montserrat, sans-serif'}}>
-                <div className="modal-dialog modal-dialog-centered" role="document">
+                <div className="modal-dialog modal-dialog-centered modal-lg" role="document">
                     <div className="modal-content">
                         <div className="modal-body">
                             <button type="button" className="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                             <div className="modal-inner-area row">
-                                <div className="col-lg-5 col-md-6 col-sm-6">
+                                <div className="col-lg-5 col-md-6 col-sm-12">
                                     <div className="product-details-left">
-                                        <div className="product-details-images slider-navigation-1">
-                                            <div className="lg-image">
-                                                <img src={product_detail.image} alt="product image" />
+                                        <div className="product-details-images">
+                                            <div className="lg-image-container">
+                                                <img 
+                                                    src={product_detail.image} 
+                                                    alt={product_detail.name_product} 
+                                                    className="img-fluid product-preview-image" 
+                                                />
+                                                {product_detail.promotion > 0 && (
+                                                    <span className="product-discount-badge">-{product_detail.promotion}%</span>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="col-lg-7 col-md-6 col-sm-6">
-                                    <div className="product-details-view-content pt-60">
+                                <div className="col-lg-7 col-md-6 col-sm-12">
+                                    <div className="product-details-view-content">
                                         <div className="product-info">
-                                            <h2>{product_detail.name_product}</h2>
-                                            <div className="rating-box pt-20">
-                                                <ul className="rating rating-with-review-item">
-                                                    <li><i className="fa fa-star-o"></i></li>
-                                                    <li><i className="fa fa-star-o"></i></li>
-                                                    <li><i className="fa fa-star-o"></i></li>
-                                                    <li className="no-star"><i className="fa fa-star-o"></i></li>
-                                                    <li className="no-star"><i className="fa fa-star-o"></i></li>
-                                                </ul>
+                                            <h2 className="product-name">{product_detail.name_product}</h2>
+                                            
+                                            <div className="product-details-rating mt-3 mb-2">
+                                                <div className="rating-stars">
+                                                    <i className="fa fa-star"></i>
+                                                    <i className="fa fa-star"></i>
+                                                    <i className="fa fa-star"></i>
+                                                    <i className="fa fa-star-half-o"></i>
+                                                    <i className="fa fa-star-o"></i>
+                                                </div>
+                                                <span className="rating-count">(4 đánh giá)</span>
                                             </div>
-                                            <div className="price-box pt-20">
-                                            {
-                                                priceSale ? (<del className="new-price new-price-2" style={{ color: '#525252'}}>{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(product_detail.price_product)+ ' VNĐ'}</del>) :
-                                                <span className="new-price new-price-2" style={{color: '#e80f0f'}}>{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(product_detail.price_product)+ ' VNĐ'}</span>
-                                            }
-                                            <br />
-                                            {
-                                               priceSale && <span className="new-price new-price-2" style={{color: '#e80f0f'}}>{new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(priceSale) + ' VNĐ'}</span>
-                                            }
-                                            </div>
-                                            <div className="product-desc">
-                                                <p>
-                                                    <span>
-                                                        {product_detail.describe}
+                                            
+                                            <div className="price-box">
+                                                {product_detail.promotion > 0 ? (
+                                                    <>
+                                                        <span className="new-price" style={{color: '#e80f0f', fontWeight: 'bold', fontSize: '24px'}}>
+                                                            {new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(product_detail.price_product - (product_detail.price_product * product_detail.promotion / 100))+ ' VNĐ'}
+                                                        </span>
+                                                        <span className="old-price" style={{textDecoration: 'line-through', color: '#999', marginLeft: '10px'}}>
+                                                            {new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(product_detail.price_product)+ ' VNĐ'}
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <span className="current-price" style={{color: '#e80f0f', fontWeight: 'bold', fontSize: '24px'}}>
+                                                        {new Intl.NumberFormat('vi-VN',{style: 'decimal',decimal: 'VND'}).format(product_detail.price_product)+ ' VNĐ'}
                                                     </span>
-                                                </p>
+                                                )}
                                             </div>
-                                            <div className="single-add-to-cart">
-                                                <form onSubmit={handler_addcart} className="cart-quantity">
-                                                    <button className="add-to-cart" type="submit">Thêm vào giỏ hàng</button>
-                                                </form>
+                                            
+                                            <div className="product-description mt-3">
+                                                <h5>Mô tả sản phẩm:</h5>
+                                                <p>{product_detail.describe}</p>
                                             </div>
+                                            
+                                            <div className="size-selection mt-4">
+                                                <h5>Kích thước:</h5>
+                                                <div className="size-options">
+                                                    <div className="size-option-container">
+                                                        {product_detail.inventory && Object.entries(product_detail.inventory).map(([size, quantity]) => (
+                                                            quantity > 0 && (
+                                                                <div 
+                                                                    key={size}
+                                                                    className={`size-option ${selectedSize === size ? 'active' : ''}`} 
+                                                                    onClick={() => setSelectedSize(size)}
+                                                                >
+                                                                    {size}
+                                                                </div>
+                                                            )
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="action-buttons mt-4">
+                                                <button 
+                                                    className="add-to-cart-btn" 
+                                                    onClick={handler_addcart}
+                                                    disabled={!selectedSize}
+                                                >
+                                                    <i className="fa fa-shopping-cart mr-2"></i>
+                                                    Thêm vào giỏ hàng
+                                                </button>
+                                                <Link to={`/detail/${product_detail._id}`} className="view-details-btn">
+                                                    <i className="fa fa-external-link mr-2"></i>
+                                                    Xem chi tiết
+                                                </Link>
+                                            </div>
+                                            
+                                            {!selectedSize && (
+                                                <div className="size-alert mt-2">
+                                                    <small className="text-danger">* Vui lòng chọn kích thước trước khi thêm vào giỏ hàng</small>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

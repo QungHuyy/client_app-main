@@ -1,32 +1,21 @@
+// Reducer cho phần tìm kiếm bằng AI/hình ảnh
 const initialState = {
-    search: ''
-}
+  search: ''
+};
 
 const ReducerSearch = (state = initialState, action) => {
+  switch (action.type) {
+    case 'ADD_SEARCH':
+      return {
+        search: action.data
+      };
+    case 'DELETE_SEARCH':
+      return {
+        search: action.data
+      };
+    default:
+      return state;
+  }
+};
 
-    switch(action.type){
-
-        case 'ADD_SEARCH':
-        
-            state = {
-                search: action.data
-            }
-
-            return state
-
-        case 'DELETE_SEARCH':
-
-            state = {
-                search: action.data
-            }
-
-            return state
-
-        default:
-            return state
-
-    }
-
-}
-
-export default ReducerSearch
+export default ReducerSearch;
