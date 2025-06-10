@@ -12,6 +12,7 @@ import User from '../API/User';
 import { addSearch } from '../Redux/Action/ActionSearch';
 import { deleteSession } from '../Redux/Action/ActionSession';
 import Swal from 'sweetalert2';
+import './css/banner.css';
 
 Home.propTypes = {
 
@@ -206,11 +207,11 @@ function Home(props) {
 
     return (
         <div className="container-fluid px-0">
-            {/* Banner với slider tự động */}
-            <div className="slider-with-banner mb-4">
+            {/* Banner với slider tự động - Đã cải thiện */}
+            <div className="slider-with-banner mb-4 mt-3">
                 <div className="row m-0">
                     <div className="col-lg-12 col-md-12 p-0">
-                        <div id="mainBannerCarousel" className="carousel slide" data-ride="carousel">
+                        <div id="mainBannerCarousel" className="carousel slide carousel-fade" data-ride="carousel">
                             <ol className="carousel-indicators">
                                 <li data-target="#mainBannerCarousel" data-slide-to="0" className="active"></li>
                                 <li data-target="#mainBannerCarousel" data-slide-to="1"></li>
@@ -220,58 +221,58 @@ function Home(props) {
                                 <div className="carousel-item active">
                                     <div className="single-slide align-center-left animation-style-01"
                                         style={{ 
-                                            backgroundImage: `url(https://static.vecteezy.com/system/resources/previews/044/637/679/non_2x/summer-sale-poster-or-banner-template-featuring-a-tropical-beach-scene-with-sun-and-party-elements-product-display-tropical-summer-scene-perfect-for-promoting-your-summer-products-on-blue-background-vector.jpg)`,
+                                            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(https://images.unsplash.com/photo-1483985988355-763728e1935b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80)`,
                                             height: '500px',
                                             backgroundSize: 'cover',
                                             backgroundPosition: 'center'
                                         }}>
                                         <div className="slider-progress"></div>
                                         <div className="slider-content">
-                                            <h2 className="helvetica-font" style={{color: '#fff', textShadow: '1px 1px 3px rgba(0,0,0,0.6)'}}>Xu hướng mới</h2>
-                                            <h3 className="helvetica-font" style={{color: '#fff', textShadow: '1px 1px 3px rgba(0,0,0,0.6)'}}>Bộ sưu tập <span>Hè 2023</span></h3>
-                                            <a href="/shop" className="slider-btn">Khám phá ngay</a>
+                                            <h2 className="helvetica-font banner-title">Xu hướng mới</h2>
+                                            <h3 className="helvetica-font banner-subtitle">Bộ sưu tập <span>Hè 2023</span></h3>
+                                            <Link to="/shop/all" className="banner-btn pulse-btn">Khám phá ngay</Link>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="carousel-item">
                                     <div className="single-slide align-center-left animation-style-02"
                                         style={{ 
-                                            backgroundImage: `url(https://img.freepik.com/free-vector/gradient-sale-background_23-2149050986.jpg)`,
+                                            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url(https://images.unsplash.com/photo-1445205170230-053b83016050?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80)`,
                                             height: '500px',
                                             backgroundSize: 'cover',
                                             backgroundPosition: 'center'
                                         }}>
                                         <div className="slider-progress"></div>
                                         <div className="slider-content">
-                                            <h2 className="helvetica-font" style={{color: '#000', textShadow: '1px 1px 3px rgba(255,255,255,0.6)'}}>Hàng mới về</h2>
-                                            <h3 className="helvetica-font" style={{color: '#000', textShadow: '1px 1px 3px rgba(255,255,255,0.6)'}}>Bộ sưu tập <span>Đặc biệt</span></h3>
-                                            <a href="/shop" className="slider-btn">Mua sắm ngay</a>
+                                            <h2 className="helvetica-font banner-title">Hàng mới về</h2>
+                                            <h3 className="helvetica-font banner-subtitle">Bộ sưu tập <span>Đặc biệt</span></h3>
+                                            <Link to="/shop/all" className="banner-btn shine-btn">Mua sắm ngay</Link>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="carousel-item">
                                     <div className="single-slide align-center-left animation-style-01"
                                         style={{ 
-                                            backgroundImage: `url(https://img.freepik.com/premium-vector/fashion-sale-banner-template-with-colorful-background_23-2148622444.jpg)`,
+                                            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80)`,
                                             height: '500px',
                                             backgroundSize: 'cover',
                                             backgroundPosition: 'center'
                                         }}>
                                         <div className="slider-progress"></div>
                                         <div className="slider-content">
-                                            <h2 className="helvetica-font" style={{color: '#fff', textShadow: '1px 1px 3px rgba(0,0,0,0.6)'}}>Ưu đãi đặc biệt</h2>
-                                            <h3 className="helvetica-font" style={{color: '#fff', textShadow: '1px 1px 3px rgba(0,0,0,0.6)'}}>Giảm đến <span>30%</span></h3>
-                                            <a href="/shop" className="slider-btn">Mua sắm ngay</a>
+                                            <h2 className="helvetica-font banner-title">Ưu đãi đặc biệt</h2>
+                                            <h3 className="helvetica-font banner-subtitle">Giảm đến <span>30%</span></h3>
+                                            <Link to="/shop/all" className="banner-btn bounce-btn">Mua sắm ngay</Link>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <a className="carousel-control-prev" href="#mainBannerCarousel" role="button" data-slide="prev">
-                                <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span className="carousel-control-prev-icon custom-nav-icon" aria-hidden="true"></span>
                                 <span className="sr-only">Previous</span>
                             </a>
                             <a className="carousel-control-next" href="#mainBannerCarousel" role="button" data-slide="next">
-                                <span className="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span className="carousel-control-next-icon custom-nav-icon" aria-hidden="true"></span>
                                 <span className="sr-only">Next</span>
                             </a>
                         </div>
@@ -281,7 +282,7 @@ function Home(props) {
 
             <div className="container">
                 {/* Phần danh mục sản phẩm */}
-            <Home_Category GET_id_modal={GET_id_modal} />
+                <Home_Category GET_id_modal={GET_id_modal} />
 
                 {/* Phần sản phẩm mới */}
                 <section className="product-area pt-60 pb-45" style={{fontFamily: 'Montserrat, sans-serif'}}>

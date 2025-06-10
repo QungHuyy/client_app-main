@@ -1,0 +1,200 @@
+/* Banner và Slider CSS */
+
+/* Thêm khoảng cách giữa header và banner */
+.slider-with-banner {
+  margin-top: 30px;
+  padding-top: 10px;
+}
+
+/* Hiệu ứng fade cho carousel */
+.carousel-fade .carousel-inner .carousel-item {
+  opacity: 0;
+  transition: opacity 1.2s ease-in-out;
+}
+
+.carousel-fade .carousel-inner .carousel-item.active {
+  opacity: 1;
+}
+
+/* Tùy chỉnh nút điều hướng carousel */
+.custom-nav-icon {
+  background-size: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.carousel-control-prev:hover .custom-nav-icon,
+.carousel-control-next:hover .custom-nav-icon {
+  background-color: rgba(255, 255, 255, 0.9);
+  transform: scale(1.1);
+}
+
+/* Tùy chỉnh nội dung slider */
+.slider-content {
+  padding: 30px;
+  background-color: rgba(0, 0, 0, 0.4);
+  border-radius: 10px;
+  max-width: 500px;
+  margin-left: 10%;
+  animation: fadeInUp 1s ease-out;
+}
+
+/* Tiêu đề banner */
+.banner-title {
+  font-size: 2.8rem;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+  margin-bottom: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* Phụ đề banner */
+.banner-subtitle {
+  font-size: 2rem;
+  color: #fff;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
+  margin-bottom: 25px;
+  font-weight: 500;
+}
+
+.banner-subtitle span {
+  color: #fed700;
+  font-weight: 700;
+}
+
+/* Nút call-to-action */
+.banner-btn {
+  display: inline-block;
+  padding: 12px 30px;
+  background-color: #fed700;
+  color: #000;
+  font-weight: 600;
+  font-size: 16px;
+  text-transform: uppercase;
+  border-radius: 30px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border: 2px solid transparent;
+  letter-spacing: 1px;
+  z-index: 1;
+}
+
+.banner-btn:hover {
+  background-color: #fff;
+  color: #000;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  text-decoration: none;
+}
+
+/* Hiệu ứng pulse cho nút */
+.pulse-btn {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(254, 215, 0, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(254, 215, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(254, 215, 0, 0);
+  }
+}
+
+/* Hiệu ứng shine cho nút */
+.shine-btn {
+  position: relative;
+}
+
+.shine-btn::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(30deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% {
+    left: -50%;
+  }
+  100% {
+    left: 150%;
+  }
+}
+
+/* Hiệu ứng bounce cho nút */
+.bounce-btn {
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Hiệu ứng fade in cho nội dung */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .slider-content {
+    margin-left: 5%;
+    max-width: 90%;
+    padding: 20px;
+  }
+  
+  .banner-title {
+    font-size: 2rem;
+  }
+  
+  .banner-subtitle {
+    font-size: 1.5rem;
+  }
+  
+  .banner-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 576px) {
+  .banner-title {
+    font-size: 1.5rem;
+  }
+  
+  .banner-subtitle {
+    font-size: 1.2rem;
+  }
+} 
